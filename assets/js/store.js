@@ -66,7 +66,7 @@
         'Perlengkapan jamaah'
       ],
       organizer: 'Haji Yuk Travel Partner (mitra simulasi)',
-      image: 'assets/img/haji.svg',
+      image: 'assets/img/haji-reguler.jpg',
       published: true,
       updatedAt: '2026-01-08'
     },
@@ -87,7 +87,7 @@
         'Transportasi dan handling bagasi'
       ],
       organizer: 'Haji Yuk Travel Partner (mitra simulasi)',
-      image: 'assets/img/haji.svg',
+      image: 'assets/img/haji-khusus.jpg',
       published: true,
       updatedAt: '2026-01-08'
     },
@@ -109,7 +109,7 @@
         'Transportasi bus pendingin'
       ],
       organizer: 'Haji Yuk Travel Partner (mitra simulasi)',
-      image: 'assets/img/umroh.svg',
+      image: 'assets/img/umroh-reguler.jpg',
       published: true,
       updatedAt: '2026-01-08'
     },
@@ -131,7 +131,7 @@
         'Muthawif dan bimbingan ibadah'
       ],
       organizer: 'Haji Yuk Travel Partner (mitra simulasi)',
-      image: 'assets/img/umroh.svg',
+      image: 'assets/img/umroh-plus.jpg',
       published: true,
       updatedAt: '2026-01-08'
     },
@@ -153,7 +153,7 @@
         'Perlengkapan umroh'
       ],
       organizer: 'Haji Yuk Travel Partner (mitra simulasi)',
-      image: 'assets/img/umroh.svg',
+      image: 'assets/img/umroh-ramadhan.jpg',
       published: true,
       updatedAt: '2026-01-08'
     }
@@ -410,6 +410,30 @@
   /* Inisialisasi & migrasi data awal                                    */
   /* ------------------------------------------------------------------ */
 
+  var PACKAGE_IMAGE_MIGRATIONS = {
+    'pkg-haji-reguler': 'assets/img/haji-reguler.jpg',
+    'pkg-haji-khusus': 'assets/img/haji-khusus.jpg',
+    'pkg-umroh-reguler': 'assets/img/umroh-reguler.jpg',
+    'pkg-umroh-plus': 'assets/img/umroh-plus.jpg',
+    'pkg-umroh-ramadhan': 'assets/img/umroh-ramadhan.jpg'
+  };
+
+  // Ganti ilustrasi SVG lama dengan foto asli tanpa menimpa gambar kustom admin.
+  function migrateSeedImages() {
+    var list = readList(KEYS.packages);
+    if (!list) return;
+    var changed = false;
+    list.forEach(function (item) {
+      var target = PACKAGE_IMAGE_MIGRATIONS[item.id];
+      if (!target) return;
+      if (item.image === 'assets/img/haji.svg' || item.image === 'assets/img/umroh.svg') {
+        item.image = target;
+        changed = true;
+      }
+    });
+    if (changed) safeSet(KEYS.packages, list);
+  }
+
   function init() {
     if (!readList(KEYS.packages)) {
       safeSet(KEYS.packages, DEFAULT_PACKAGES);
@@ -429,6 +453,7 @@
     if (!safeGet(KEYS.client, null)) {
       safeSet(KEYS.client, makeId('client'));
     }
+    migrateSeedImages();
     return true;
   }
 

@@ -39,6 +39,8 @@ Buat akun melalui **Masuk → Daftar** (nama, email, password). Akun diperlukan 
 
 Akun admin dibuat otomatis pada pemakaian pertama dengan password **ter-hash PBKDF2-SHA256 + salt acak**. Kredensial demo dapat diganti melalui **Pengaturan → Ganti password**. MFA nonaktif secara default; aktifkan di **Pengaturan → Autentikasi dua faktor**.
 
+**Akses admin:** gunakan `https://hajiyuk.vercel.app/admin.html`. Alamat `/admin` dan `/dashboard` kini diarahkan otomatis ke halaman tersebut. Jika password/MFA sudah diubah dan tidak bisa masuk, klik **Pulihkan akses admin demo** di halaman login untuk mengembalikan kredensial ke `admin` / `admin123` (MFA dimatikan). Segera ganti password setelah pemulihan.
+
 ## Kontrol Keamanan
 
 Checklist mengacu pada kontrol minimum UMKM:
@@ -86,8 +88,10 @@ assets/js/ui.js          Toast, modal, dialog konfirmasi, badge
 assets/js/app.js         Logika aplikasi pengguna
 assets/js/admin.js       Logika dashboard admin
 assets/img/*.svg         Ilustrasi & logo
-vercel.json              Header keamanan untuk deployment Vercel
+vercel.json              Redirect admin + header keamanan deployment Vercel
 .gitignore               Pengecualian env, kunci, log, dan build
+CREDITS.md               Atribusi foto Wikimedia Commons
+assets/img/*.jpg         Foto asli halaman utama & paket
 ```
 
 ## Penyimpanan Data
@@ -105,7 +109,11 @@ vercel.json              Header keamanan untuk deployment Vercel
 | `hajiyuk_client_id` | ID perangkat untuk kompatibilitas data lama |
 | `hajiyuk_profile`, `hajiyuk_text_scale` | Profil kontak & preferensi teks |
 
-Data awal paket/panduan/pengumuman diisi sekali dan tidak menimpa data pengguna. JSON tidak valid ditangani dengan fallback aman. Reset data simulasi **tidak** menghapus akun, sesi, atau log audit.
+Data awal paket/panduan/pengumuman diisi sekali dan tidak menimpa data pengguna. Paket bawaan yang masih memakai ilustrasi SVG lama otomatis dimigrasikan ke foto baru tanpa menimpa gambar kustom yang diunggah admin. JSON tidak valid ditangani dengan fallback aman. Reset data simulasi **tidak** menghapus akun, sesi, atau log audit.
+
+## Foto
+
+Enam foto asli pada `assets/img/` berasal dari Wikimedia Commons dan dipakai sesuai lisensinya. Detail pembuat, judul asli, dan lisensi ada di [`CREDITS.md`](CREDITS.md). Foto diperkecil ke lebar maksimal 1600 px dan dimuat secara lokal agar sesuai CSP `img-src 'self'`.
 
 ## Batasan Prototype
 

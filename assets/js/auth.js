@@ -857,6 +857,51 @@
     return { ok: true, message: 'MFA dinonaktifkan.' };
   }
 
+  async function resetAdminAccess() {
+    if (!hasCrypto()) {
+      return { ok: false, message: 'Browser tidak mendukung Web Crypto. Buka aplikasi melalui HTTPS.' };
+    }
+    var users = readUsers();
+    var admin = null;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].role === 'admin') {
+        admin = users[i];
+        break;
+      }
+    }
+    var password = 'admin123';
+    if (admin) {
+      var salt = bytesToBase64(randomBytes(16));
+      admin.salt = salt;
+      admin.hash = await derivePassword(password, base64ToBytes(salt), PBKDF2_ITERATIONS);
+      admin.iterations = PBKDF2_ITERATIONS;
+      admin.mfa = { enabled: false, secret: '' };
+      admin.passwordChangedAt = store.nowISO();
+    } else {
+      admin = await buildUser({
+        name: 'Admin Haji Yuk',
+        email: 'admin@hajiyuk.local',
+        username: 'admin',
+        password: password,
+        role: 'admin'
+      });
+      users.push(admin);
+    }
+    writeUsers(users);
+    try {
+      var storage = sessionStorage();
+      if (storage) storage.removeItem(SESSION_KEY);
+    } catch (error) {
+      /* diabaikan */
+    }
+    clearFailures('admin', 'admin');
+    audit('Pemulihan akses', 'Akun admin demo direset ke kredensial awal', 'Sistem');
+    return {
+      ok: true,
+      message: 'Akses admin dipulihkan. Masuk dengan admin / admin123, lalu segera ganti password.'
+    };
+  }
+
   function mfaEnabled() {
     var session = getSession();
     if (!session) return false;
@@ -982,6 +1027,7 @@
     disableMfa: disableMfa,
     cancelMfaSetup: cancelMfaSetup,
     mfaEnabled: mfaEnabled,
+    resetAdminAccess: resetAdminAccess,
     exportBackup: exportBackup,
     restoreBackup: restoreBackup,
     IDLE_MINUTES: IDLE_MS / 60000,

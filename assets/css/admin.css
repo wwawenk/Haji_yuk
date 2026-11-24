@@ -1151,6 +1151,34 @@
   color: var(--muted);
 }
 
+.login-help {
+  margin: 1rem 0 0.45rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.login-help code {
+  padding: 0.1rem 0.3rem;
+  border-radius: 5px;
+  background: var(--green-50);
+  font-size: 0.75rem;
+}
+
+.login-recover {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--green-700);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.login-recover:hover { color: var(--danger); }
+
 .settings-card--wide { grid-column: 1 / -1; }
 
 .settings-card__head {

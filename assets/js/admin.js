@@ -131,6 +131,40 @@
       });
     }
 
+    var recover = $('recoverAdminBtn');
+    if (recover) {
+      recover.addEventListener('click', function () {
+        ui.confirmDialog({
+          title: 'Pulihkan akses admin demo?',
+          message:
+            'Password admin akan direset menjadi admin123 dan MFA dinonaktifkan. Gunakan hanya jika Anda benar-benar tidak bisa masuk, lalu segera ganti password.',
+          confirmLabel: 'Ya, pulihkan akses',
+          tone: 'danger'
+        }).then(async function (confirmed) {
+          if (!confirmed) return;
+          var result = await auth.resetAdminAccess();
+          if (!result.ok) {
+            ui.toast(result.message, 'error');
+            return;
+          }
+          var username = $('loginUsername');
+          var pass = $('loginPassword');
+          if (username) username.value = 'admin';
+          if (pass) {
+            pass.value = '';
+            pass.focus();
+          }
+          if (mfaField) mfaField.hidden = true;
+          var errorBox = $('loginError');
+          if (errorBox) {
+            errorBox.textContent = result.message;
+            errorBox.hidden = false;
+          }
+          ui.toast('Akses admin berhasil dipulihkan.');
+        });
+      });
+    }
+
     if (!form) return;
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
