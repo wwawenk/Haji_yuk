@@ -2,9 +2,9 @@
  * Haji Yuk — Lapisan data prototype (localStorage)
  * Dipakai bersama oleh aplikasi pengguna (index.html) dan dashboard admin (admin.html).
  *
- * CATATAN KEAMANAN: kredensial admin di bawah hanya untuk prototype frontend.
- * Autentikasi berbasis JavaScript di browser dapat diperiksa dan dilewati.
- * Versi produksi wajib memakai backend, autentikasi server, dan password hashing.
+ * CATATAN KEAMANAN: autentikasi ditangani modul auth.js memakai hash PBKDF2,
+ * rate limit, MFA TOTP, dan sesi berbatas waktu. Karena seluruhnya berjalan di
+ * browser, ini tetap kontrol demo, bukan pengganti autentikasi server.
  */
 (function (global) {
   'use strict';
@@ -20,15 +20,9 @@
     textScale: 'hajiyuk_text_scale'
   };
 
-  var ADMIN_SESSION_KEY = 'hajiyuk_admin_session';
   var SEED_VERSION = 1;
-
-  var ADMIN = {
-    username: 'admin',
-    password: 'admin123',
-    name: 'Admin Haji Yuk',
-    role: 'Administrator Prototype'
-  };
+  var LOG_RETENTION_DAYS = 90;
+  var LOG_LIMIT = 300;
 
   var APP = {
     name: 'Haji Yuk',
@@ -591,6 +585,7 @@
       id: item.id || makeId('req'),
       code: item.code || makeRequestCode(),
       clientId: item.clientId || '',
+      userId: item.userId || '',
       name: String(item.name || '').trim(),
       phone: String(item.phone || '').trim(),
       serviceType: item.serviceType === 'Haji' ? 'Haji' : 'Umroh',
@@ -623,6 +618,13 @@
     });
   }
 
+  function getRequestsForUser(userId) {
+    if (!userId) return [];
+    return getRequests().filter(function (item) {
+      return item.userId === userId;
+    });
+  }
+
   function getRequestById(id) {
     var list = getRequests();
     for (var i = 0; i < list.length; i++) {
@@ -635,6 +637,7 @@
     var list = getRequests();
     var entry = normalizeRequest({
       clientId: data.clientId || getClientId(),
+      userId: data.userId || '',
       name: data.name,
       phone: data.phone,
       serviceType: data.serviceType,
@@ -926,17 +929,25 @@
   /* Log aktivitas admin                                                 */
   /* ------------------------------------------------------------------ */
 
-  function logActivity(action, detail, type) {
+  function logActivity(action, detail, type, actor) {
     var logs = readList(KEYS.logs) || [];
     logs.unshift({
       id: makeId('log'),
-      action: String(action || ''),
-      detail: String(detail || ''),
+      action: String(action || '').slice(0, 120),
+      detail: String(detail || '').slice(0, 300),
       type: type || 'umum',
       at: nowISO(),
-      actor: ADMIN.name
+      actor: String(actor || (type === 'system' ? 'Sistem' : 'Admin Haji Yuk')).slice(0, 80)
     });
-    safeSet(KEYS.logs, logs.slice(0, 60));
+    var cutoff = Date.now() - LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    var pruned = logs
+      .filter(function (entry) {
+        if (!entry || typeof entry !== 'object') return false;
+        var time = new Date(entry.at).getTime();
+        return isNaN(time) || time >= cutoff;
+      })
+      .slice(0, LOG_LIMIT);
+    safeSet(KEYS.logs, pruned);
   }
 
   function getLogs() {
@@ -944,56 +955,6 @@
     return logs.filter(function (item) {
       return item && typeof item === 'object';
     });
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* Sesi admin                                                          */
-  /* ------------------------------------------------------------------ */
-
-  function loginAdmin(username, password) {
-    var user = String(username || '').trim();
-    var pass = String(password || '');
-    if (user !== ADMIN.username || pass !== ADMIN.password) {
-      return { ok: false, message: 'Username atau password salah. Silakan coba lagi.' };
-    }
-    var session = {
-      username: ADMIN.username,
-      name: ADMIN.name,
-      role: ADMIN.role,
-      loginAt: nowISO()
-    };
-    try {
-      global.sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session));
-    } catch (error) {
-      return { ok: false, message: 'Browser tidak mengizinkan penyimpanan sesi.' };
-    }
-    logActivity('Login admin', 'Admin masuk ke dashboard', 'auth');
-    return { ok: true, session: session };
-  }
-
-  function getAdminSession() {
-    try {
-      var raw = global.sessionStorage ? global.sessionStorage.getItem(ADMIN_SESSION_KEY) : null;
-      if (!raw) return null;
-      var parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== 'object' || !parsed.username) return null;
-      return parsed;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  function isAdminLoggedIn() {
-    return !!getAdminSession();
-  }
-
-  function logoutAdmin() {
-    try {
-      if (global.sessionStorage) global.sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    } catch (error) {
-      /* diabaikan */
-    }
-    logActivity('Logout admin', 'Admin keluar dari dashboard', 'auth');
   }
 
   /* ------------------------------------------------------------------ */
@@ -1043,23 +1004,22 @@
   /* ------------------------------------------------------------------ */
 
   function resetSimulationData() {
+    // Akun pengguna, sesi, dan log audit sengaja dipertahankan.
     removeKey(KEYS.packages);
     removeKey(KEYS.requests);
     removeKey(KEYS.guides);
     removeKey(KEYS.announcements);
-    removeKey(KEYS.logs);
     removeKey(KEYS.profile);
     removeKey(KEYS.textScale);
     removeKey(KEYS.client);
     init();
-    logActivity('Reset data', 'Seluruh data simulasi dikembalikan ke kondisi awal', 'system');
+    logActivity('Reset data', 'Data operasional dikembalikan ke kondisi awal; akun dan log dipertahankan', 'system');
     return true;
   }
 
   global.HajiYuk = {
     KEYS: KEYS,
     APP: APP,
-    ADMIN: { username: ADMIN.username, name: ADMIN.name, role: ADMIN.role },
     STATUSES: STATUSES,
     STATUS_ORDER: STATUS_ORDER,
     GUIDE_CATEGORIES: GUIDE_CATEGORIES,
@@ -1082,6 +1042,7 @@
     togglePackagePublished: togglePackagePublished,
     getRequests: getRequests,
     getRequestsForClient: getRequestsForClient,
+    getRequestsForUser: getRequestsForUser,
     getRequestById: getRequestById,
     addRequest: addRequest,
     updateRequestStatus: updateRequestStatus,
@@ -1097,10 +1058,6 @@
     toggleAnnouncementActive: toggleAnnouncementActive,
     logActivity: logActivity,
     getLogs: getLogs,
-    loginAdmin: loginAdmin,
-    getAdminSession: getAdminSession,
-    isAdminLoggedIn: isAdminLoggedIn,
-    logoutAdmin: logoutAdmin,
     buildCSV: buildCSV,
     downloadCSV: downloadCSV,
     resetSimulationData: resetSimulationData

@@ -1,0 +1,35 @@
+# Dependensi
+node_modules/
+vendor/
+
+# Kredensial & konfigurasi lokal
+.env
+.env.*
+!.env.example
+.dev.vars
+*.pem
+*.key
+
+# Log & berkas sementara
+*.log
+.server.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build & cache
+dist/
+build/
+out/
+.next/
+coverage/
+.cache/
+
+# Vercel & OS
+.vercel/
+.DS_Store
+Thumbs.db
+
+# Berkas editor
+.vscode/
+.idea/

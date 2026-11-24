@@ -196,7 +196,23 @@
       safeUrl +
       '" alt="' +
       safeAlt +
-      '" loading="lazy" onerror="this.classList.add(\'is-broken\');this.parentNode.classList.add(\'has-broken-image\');" />'
+      '" loading="lazy" />'
+    );
+  }
+
+  // Penanganan gambar gagal dimuat tanpa inline handler (kompatibel CSP ketat).
+  if (typeof document !== 'undefined') {
+    document.addEventListener(
+      'error',
+      function (event) {
+        var image = event.target;
+        if (!image || image.tagName !== 'IMG') return;
+        image.classList.add('is-broken');
+        if (image.parentNode && image.parentNode.classList) {
+          image.parentNode.classList.add('has-broken-image');
+        }
+      },
+      true
     );
   }
 

@@ -86,6 +86,21 @@
             </div>
           </div>
 
+          <div class="field" id="mfaField" hidden>
+            <label for="loginMfa">Kode MFA (6 digit)</label>
+            <input
+              type="text"
+              id="loginMfa"
+              name="mfa"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              pattern="[0-9]{6}"
+              placeholder="123456"
+            />
+            <p class="field-hint">Buka aplikasi authenticator Anda, lalu masukkan kode yang tampil.</p>
+          </div>
+
           <div class="login-error" id="loginError" role="alert" hidden></div>
 
           <button type="submit" class="btn btn--primary btn--lg btn--block">Masuk sebagai Admin</button>
@@ -95,6 +110,7 @@
           <strong>Kredensial demo</strong>
           <span>Username: <code>admin</code></span>
           <span>Password: <code>admin123</code></span>
+          <span class="login-demo__hint">MFA nonaktif untuk akun demo; aktifkan melalui Pengaturan → Keamanan.</span>
         </div>
 
         <a class="login-back" href="index.html">← Kembali ke aplikasi utama</a>
@@ -514,6 +530,119 @@
         <!-- ======================= SETTINGS ======================= -->
         <section class="admin-view" id="view-settings" data-view-panel="settings" hidden>
           <div class="settings-grid">
+            <article class="card settings-card--wide">
+              <div class="settings-card__head">
+                <h2>Akun admin</h2>
+                <span class="badge badge--success" id="adminRoleBadge">Administrator</span>
+              </div>
+              <dl class="info-list">
+                <div><dt>Nama</dt><dd data-admin-name>Admin Haji Yuk</dd></div>
+                <div><dt>Email</dt><dd id="adminEmail">—</dd></div>
+                <div><dt>Login terakhir</dt><dd id="adminLastLogin">—</dd></div>
+                <div><dt>Sesi berakhir otomatis</dt><dd id="adminSessionLeft">—</dd></div>
+              </dl>
+
+              <h3 class="settings-subtitle">Ganti password</h3>
+              <form id="adminPasswordForm" class="form-grid" novalidate>
+                <div class="field">
+                  <label for="currentAdminPassword">Password saat ini</label>
+                  <input type="password" id="currentAdminPassword" autocomplete="current-password" />
+                </div>
+                <div class="field">
+                  <label for="newAdminPassword">Password baru</label>
+                  <input type="password" id="newAdminPassword" autocomplete="new-password" />
+                </div>
+                <div class="field">
+                  <label for="confirmAdminPassword">Ulangi password baru</label>
+                  <input type="password" id="confirmAdminPassword" autocomplete="new-password" />
+                </div>
+                <p class="field-error" id="adminPasswordError" role="alert"></p>
+                <div class="form-actions form-actions--start">
+                  <button type="submit" class="btn btn--primary">Perbarui Password</button>
+                </div>
+              </form>
+            </article>
+
+            <article class="card">
+              <h2>Autentikasi dua faktor</h2>
+              <p class="muted" id="mfaStatus">Memeriksa status MFA…</p>
+
+              <div id="mfaSetupPanel" class="mfa-panel" hidden>
+                <p class="field-hint">
+                  Tambahkan kunci ini ke aplikasi authenticator (Google Authenticator, Authy, 1Password,
+                  dsb.), lalu masukkan kode 6 digit untuk mengaktifkan.
+                </p>
+                <p>Kunci rahasia:</p>
+                <code class="mfa-secret" id="mfaSecret">—</code>
+                <p class="field-hint">
+                  <a id="mfaOtpLink" href="#" rel="noopener">Buka tautan otpauth://</a>
+                </p>
+                <div class="field">
+                  <label for="mfaSetupCode">Kode verifikasi</label>
+                  <input type="text" id="mfaSetupCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" />
+                </div>
+                <p class="field-error" id="mfaSetupError" role="alert"></p>
+                <div class="settings-actions">
+                  <button type="button" class="btn btn--primary" id="mfaConfirmBtn">Verifikasi &amp; Aktifkan</button>
+                  <button type="button" class="btn btn--ghost" id="mfaCancelBtn">Batal</button>
+                </div>
+              </div>
+
+              <div class="settings-actions" id="mfaActions">
+                <button type="button" class="btn btn--outline" id="mfaEnableBtn">Aktifkan MFA</button>
+              </div>
+
+              <form id="mfaDisableForm" class="mfa-panel" novalidate hidden>
+                <p class="field-hint">Untuk menonaktifkan MFA, konfirmasi password dan kode authenticator.</p>
+                <div class="field">
+                  <label for="mfaDisablePassword">Password</label>
+                  <input type="password" id="mfaDisablePassword" autocomplete="current-password" />
+                </div>
+                <div class="field">
+                  <label for="mfaDisableCode">Kode MFA</label>
+                  <input type="text" id="mfaDisableCode" inputmode="numeric" maxlength="6" placeholder="123456" />
+                </div>
+                <p class="field-error" id="mfaDisableError" role="alert"></p>
+                <button type="submit" class="btn btn--danger">Nonaktifkan MFA</button>
+              </form>
+            </article>
+
+            <article class="card">
+              <h2>Sesi &amp; akses</h2>
+              <p class="muted">
+                Sesi admin berakhir setelah <strong>20 menit tidak aktif</strong> atau maksimal
+                <strong>8 jam</strong>. Logout langsung menghapus sesi dari browser.
+              </p>
+              <p class="muted" id="sessionCountdown">—</p>
+              <div class="settings-actions">
+                <a class="btn btn--outline" href="index.html">Buka aplikasi pengguna</a>
+                <button type="button" class="btn btn--danger" id="settingsLogout">Logout</button>
+              </div>
+            </article>
+
+            <article class="card settings-card--wide">
+              <h2>Log keamanan</h2>
+              <p class="muted">
+                Percobaan login, perubahan password, MFA, dan aktivitas admin. Disimpan maksimal 90
+                hari atau 300 entri terakhir.
+              </p>
+              <div id="securityLogList" class="list-stack list-stack--scroll"></div>
+            </article>
+
+            <article class="card settings-card--wide">
+              <h2>Backup &amp; pemulihan</h2>
+              <p class="muted">
+                Unduh cadangan data operasional (paket, permintaan, panduan, pengumuman, log) dalam
+                format JSON. Kredensial akun tidak ikut diekspor.
+              </p>
+              <div class="settings-actions">
+                <button type="button" class="btn btn--primary" id="exportBackupBtn">Unduh Backup JSON</button>
+                <button type="button" class="btn btn--outline" id="importBackupBtn">Pulihkan dari Backup</button>
+                <input type="file" id="restoreFile" accept="application/json,.json" hidden />
+              </div>
+              <p class="field-hint" id="backupStatus" role="status"></p>
+            </article>
+
             <article class="card">
               <h2>Identitas aplikasi</h2>
               <dl class="info-list">
@@ -525,42 +654,13 @@
             </article>
 
             <article class="card">
-              <h2>Identitas admin</h2>
-              <dl class="info-list">
-                <div><dt>Nama</dt><dd>Admin Haji Yuk</dd></div>
-                <div><dt>Peran</dt><dd>Administrator Prototype</dd></div>
-                <div><dt>Username</dt><dd>admin</dd></div>
-                <div><dt>Password</dt><dd>Disembunyikan (kredensial demo tidak ditampilkan di sini)</dd></div>
-              </dl>
-              <p class="notice notice--warn">
-                Autentikasi ini hanya simulasi frontend. Jangan gunakan untuk data nyata.
-              </p>
-            </article>
-
-            <article class="card">
               <h2>Penyimpanan data</h2>
               <p class="muted">
-                Data disimpan di <strong>localStorage</strong> browser perangkat ini, meliputi paket,
-                permintaan pendaftaran, panduan, pengumuman, dan log aktivitas. Sesi login admin
-                disimpan di <strong>sessionStorage</strong>.
-              </p>
-              <p class="muted">
-                Data tidak tersinkronisasi ke perangkat lain. Membersihkan data browser akan
-                menghapus seluruh data prototype.
+                Data disimpan di <strong>localStorage</strong> browser perangkat ini. Sesi login
+                disimpan di <strong>sessionStorage</strong> dan tidak bertahan setelah tab ditutup.
+                Akun serta log audit dipertahankan saat data simulasi direset.
               </p>
               <button type="button" class="btn btn--danger" id="resetDataAdmin">Hapus Seluruh Data Simulasi</button>
-            </article>
-
-            <article class="card">
-              <h2>Sesi &amp; akses</h2>
-              <p class="muted">
-                Anda sedang masuk sebagai Admin Haji Yuk. Logout akan mengakhiri sesi dan
-                mengembalikan Anda ke halaman login admin.
-              </p>
-              <div class="settings-actions">
-                <a class="btn btn--outline" href="index.html">Buka aplikasi pengguna</a>
-                <button type="button" class="btn btn--danger" id="settingsLogout">Logout</button>
-              </div>
             </article>
           </div>
         </section>
@@ -847,6 +947,7 @@
   </noscript>
 
   <script src="assets/js/store.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/ui.js"></script>
   <script src="assets/js/admin.js"></script>
 </body>

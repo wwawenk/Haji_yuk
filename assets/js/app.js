@@ -5,10 +5,12 @@
   'use strict';
 
   var store = window.HajiYuk;
+  var auth = window.HajiYukAuth;
   var ui = window.HajiYukUI;
   var esc = store.escapeHTML;
 
-  var PAGES = ['beranda', 'katalog', 'pendaftaran', 'status', 'panduan', 'profil', 'bantuan'];
+  var PAGES = ['beranda', 'katalog', 'pendaftaran', 'status', 'panduan', 'profil', 'bantuan', 'masuk', 'privasi'];
+  var PROTECTED = ['pendaftaran', 'status'];
 
   var state = {
     page: 'beranda',
@@ -17,7 +19,8 @@
     guideFilter: 'Semua',
     guideQuery: '',
     pendingPackageId: '',
-    lastRequestId: ''
+    lastRequestId: '',
+    authNext: ''
   };
 
   /* ------------------------------------------------------------------ */
@@ -56,11 +59,13 @@
     if (page === 'katalog') renderCatalog();
     if (page === 'pendaftaran') {
       syncPackageOptions();
+      prefillAccountFields();
       if (options && options.packageId) prefillRegistration(options.packageId);
     }
     if (page === 'status') renderStatus();
     if (page === 'panduan') renderGuides();
     if (page === 'profil') fillProfile();
+    if (page === 'masuk') renderAuthState();
 
     window.scrollTo({ top: 0, behavior: 'auto' });
   }
@@ -86,6 +91,14 @@
 
   function handleRoute() {
     var page = pageFromHash();
+    if (PROTECTED.indexOf(page) !== -1 && !auth.getSession()) {
+      state.authNext = page;
+      if (window.location.hash !== '#/masuk') {
+        window.location.hash = '#/masuk';
+        return;
+      }
+      page = 'masuk';
+    }
     var options = {};
     if (page === 'pendaftaran' && state.pendingPackageId) {
       options.packageId = state.pendingPackageId;
@@ -478,6 +491,19 @@
     }
   }
 
+  function prefillAccountFields() {
+    var session = auth.getSession();
+    var profile = store.getProfile();
+    var nameField = document.getElementById('regName');
+    var phoneField = document.getElementById('regPhone');
+    if (nameField && !nameField.value) {
+      nameField.value = profile.name || (session ? session.name : '');
+    }
+    if (phoneField && !phoneField.value) {
+      phoneField.value = profile.phone || '';
+    }
+  }
+
   function prefillRegistration(packageId) {
     var pkg = store.getPackageById(packageId);
     if (!pkg) return;
@@ -638,7 +664,16 @@
       return;
     }
 
+    var session = auth.getSession();
+    if (!session) {
+      state.authNext = 'pendaftaran';
+      go('masuk');
+      ui.toast('Silakan masuk terlebih dahulu untuk mengirim permintaan.', 'error');
+      return;
+    }
+
     var request = store.addRequest({
+      userId: session.userId,
       name: data.name,
       phone: data.phone,
       serviceType: data.serviceType,
@@ -726,13 +761,13 @@
     var meta = document.getElementById('statusMeta');
     if (!host) return;
 
-    var clientId = store.getClientId();
-    var requests = store.getRequestsForClient(clientId);
+    var session = auth.getSession();
+    var requests = session ? store.getRequestsForUser(session.userId) : [];
 
     if (meta) {
       meta.textContent = requests.length
-        ? 'Menampilkan ' + requests.length + ' permintaan yang dibuat dari browser ini.'
-        : 'Belum ada permintaan yang dibuat dari browser ini.';
+        ? 'Menampilkan ' + requests.length + ' permintaan milik akun ' + session.email + '.'
+        : 'Belum ada permintaan untuk akun ' + (session ? session.email : 'ini') + '.';
     }
 
     if (!requests.length) {
@@ -821,6 +856,181 @@
     if (name) name.value = profile.name;
     if (phone) phone.value = profile.phone;
     if (client) client.textContent = store.getClientId();
+    renderAccount();
+  }
+
+  function renderAccount() {
+    var session = auth.getSession();
+    var guest = document.getElementById('accountInfo');
+    var security = document.getElementById('accountSecurity');
+    var meta = document.getElementById('accountMeta');
+    var sessionInfo = document.getElementById('sessionInfo');
+
+    if (!guest || !security) return;
+    if (!session) {
+      guest.hidden = false;
+      security.hidden = true;
+      return;
+    }
+
+    guest.hidden = true;
+    security.hidden = false;
+    if (meta) {
+      meta.innerHTML =
+        '<div><dt>Nama</dt><dd>' + esc(session.name) + '</dd></div>' +
+        '<div><dt>Email</dt><dd>' + esc(session.email) + '</dd></div>' +
+        '<div><dt>Peran</dt><dd>Pengguna</dd></div>' +
+        '<div><dt>Sesi</dt><dd>Berakhir otomatis setelah ' + esc(String(auth.IDLE_MINUTES)) + ' menit tidak aktif</dd></div>';
+    }
+    if (sessionInfo) {
+      sessionInfo.textContent = 'Sisa waktu sesi: sekitar ' + auth.sessionMinutesLeft() + ' menit.';
+    }
+  }
+
+  function updateAccountUI() {
+    var link = document.getElementById('accountLink');
+    var logout = document.getElementById('accountLogout');
+    var session = auth.getSession();
+    if (link) {
+      link.textContent = session ? session.name.split(' ')[0] : 'Masuk';
+      link.setAttribute('href', session ? '#/profil' : '#/masuk');
+      link.setAttribute('data-go', session ? 'profil' : 'masuk');
+      link.setAttribute('title', session ? 'Buka profil akun' : 'Masuk atau daftar akun');
+    }
+    if (logout) logout.hidden = !session;
+  }
+
+  function showAuthError(id, message) {
+    var box = document.getElementById(id);
+    if (!box) return;
+    box.textContent = message || '';
+    box.hidden = !message;
+  }
+
+  function switchAuthTab(tab) {
+    var isLogin = tab !== 'register';
+    var loginForm = document.getElementById('loginForm');
+    var registerForm = document.getElementById('registerForm');
+    if (!loginForm || !registerForm) return;
+    loginForm.hidden = !isLogin;
+    registerForm.hidden = isLogin;
+    document.querySelectorAll('[data-auth-tab]').forEach(function (button) {
+      var active = button.getAttribute('data-auth-tab') === (isLogin ? 'login' : 'register');
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    var switchText = document.getElementById('authSwitchText');
+    var switchBtn = document.getElementById('authSwitchBtn');
+    if (switchText) switchText.textContent = isLogin ? 'Belum punya akun?' : 'Sudah punya akun?';
+    if (switchBtn) switchBtn.textContent = isLogin ? 'Daftar sekarang' : 'Masuk di sini';
+    showAuthError('userLoginError', '');
+    showAuthError('registerError', '');
+  }
+
+  function afterLogin(session) {
+    updateAccountUI();
+    renderAuthState();
+    ui.toast('Selamat datang, ' + session.name + '.');
+    var next = state.authNext || 'status';
+    state.authNext = '';
+    go(next);
+  }
+
+  function logoutUser() {
+    auth.logout();
+    updateAccountUI();
+    renderAccount();
+    state.authNext = '';
+    if (PROTECTED.indexOf(state.page) !== -1) go('beranda');
+    else showPage(state.page);
+    ui.toast('Anda telah keluar dari akun.', 'info');
+  }
+
+  function initAuth() {
+    var loginForm = document.getElementById('loginForm');
+    var registerForm = document.getElementById('registerForm');
+
+    document.querySelectorAll('[data-auth-tab]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        switchAuthTab(button.getAttribute('data-auth-tab'));
+      });
+    });
+
+    var switchBtn = document.getElementById('authSwitchBtn');
+    if (switchBtn) {
+      switchBtn.addEventListener('click', function () {
+        var onLogin = !document.getElementById('loginForm').hidden;
+        switchAuthTab(onLogin ? 'register' : 'login');
+      });
+    }
+
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var input = document.getElementById(button.getAttribute('data-password-toggle'));
+        if (!input) return;
+        var isPassword = input.getAttribute('type') === 'password';
+        input.setAttribute('type', isPassword ? 'text' : 'password');
+        button.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+        button.setAttribute('aria-label', isPassword ? 'Sembunyikan password' : 'Tampilkan password');
+        button.querySelector('span').textContent = isPassword ? '🙈' : '👁';
+      });
+    });
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        showAuthError('userLoginError', '');
+        var identifier = document.getElementById('loginEmail').value.trim();
+        var password = document.getElementById('userLoginPassword').value;
+        if (!identifier || !password) {
+          showAuthError('userLoginError', 'Isi email/username dan password.');
+          return;
+        }
+        var submit = loginForm.querySelector('button[type="submit"]');
+        if (submit) submit.disabled = true;
+        var result = await auth.login(identifier, password, 'user', '');
+        if (submit) submit.disabled = false;
+        if (!result.ok) {
+          showAuthError('userLoginError', result.message);
+          return;
+        }
+        loginForm.reset();
+        afterLogin(result.session);
+      });
+    }
+
+    if (registerForm) {
+      registerForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        showAuthError('registerError', '');
+        var data = {
+          name: document.getElementById('registerName').value,
+          email: document.getElementById('registerEmail').value,
+          password: document.getElementById('registerPassword').value,
+          confirm: document.getElementById('registerConfirm').value
+        };
+        var consent = document.getElementById('registerConsent');
+        if (!consent || !consent.checked) {
+          showAuthError('registerError', 'Centang persetujuan kebijakan privasi terlebih dahulu.');
+          return;
+        }
+        var submit = registerForm.querySelector('button[type="submit"]');
+        if (submit) submit.disabled = true;
+        var result = await auth.register(data);
+        if (submit) submit.disabled = false;
+        if (!result.ok) {
+          showAuthError('registerError', result.message);
+          return;
+        }
+        registerForm.reset();
+        afterLogin(result.session);
+      });
+    }
+  }
+
+  function renderAuthState() {
+    updateAccountUI();
+    renderAccount();
   }
 
   function initProfile() {
@@ -836,13 +1046,37 @@
       });
     }
 
+    var passwordForm = document.getElementById('changePasswordForm');
+    if (passwordForm) {
+      passwordForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var error = document.getElementById('passwordError');
+        if (error) error.textContent = '';
+        var result = await auth.changePassword(
+          document.getElementById('currentPassword').value,
+          document.getElementById('newPassword').value,
+          document.getElementById('confirmPassword').value
+        );
+        if (!result.ok) {
+          if (error) error.textContent = result.message;
+          return;
+        }
+        passwordForm.reset();
+        ui.toast(result.message);
+        renderAccount();
+      });
+    }
+
+    var logout = document.getElementById('profileLogout');
+    if (logout) logout.addEventListener('click', logoutUser);
+
     var reset = document.getElementById('resetDataBtn');
     if (reset) {
       reset.addEventListener('click', function () {
         ui.confirmDialog({
           title: 'Hapus seluruh data simulasi?',
           message:
-            'Semua paket, permintaan pendaftaran, panduan, pengumuman, dan pengaturan di browser ini akan dikembalikan ke kondisi awal. Tindakan ini tidak dapat dibatalkan.',
+            'Semua paket, permintaan pendaftaran, panduan, pengumuman, dan data kontak di browser ini akan dikembalikan ke kondisi awal. Akun dan log audit tetap disimpan. Tindakan ini tidak dapat dibatalkan.',
           confirmLabel: 'Ya, hapus semua data',
           tone: 'danger'
         }).then(function (confirmed) {
@@ -912,6 +1146,18 @@
       }
     });
 
+    var accountLogout = document.getElementById('accountLogout');
+    if (accountLogout) accountLogout.addEventListener('click', logoutUser);
+
+    window.setInterval(function () {
+      updateAccountUI();
+      if (PROTECTED.indexOf(state.page) !== -1 && !auth.getSession()) {
+        state.authNext = state.page;
+        go('masuk');
+        ui.toast('Sesi berakhir. Silakan masuk kembali.', 'info');
+      }
+    }, 30000);
+
     var catalogSearch = document.getElementById('catalogSearch');
     if (catalogSearch) {
       catalogSearch.addEventListener('input', function () {
@@ -951,14 +1197,17 @@
   /* Inisialisasi                                                        */
   /* ------------------------------------------------------------------ */
 
-  function init() {
+  async function init() {
     store.init();
+    await auth.init();
     initTextScale();
     initMobileNav();
+    initAuth();
     initRegistration();
     initProfile();
     initGlobalEvents();
     ui.initModalDismiss();
+    updateAccountUI();
 
     if (!window.location.hash) {
       try {

@@ -8,6 +8,7 @@
   'use strict';
 
   var store = window.HajiYuk;
+  var auth = window.HajiYukAuth;
   var ui = window.HajiYukUI;
   var esc = store.escapeHTML;
 
@@ -20,7 +21,7 @@
     guides: ['Kelola Konten', 'Materi panduan ibadah dan informasi aplikasi'],
     announcements: ['Pengumuman', 'Informasi penting pada halaman Beranda pengguna'],
     reports: ['Laporan', 'Rekap dan ekspor data permintaan pendaftaran'],
-    settings: ['Pengaturan', 'Informasi aplikasi, admin, dan penyimpanan data']
+    settings: ['Pengaturan', 'Akun admin, MFA, log keamanan, dan penyimpanan data']
   };
 
   var STATUS_COLORS = {
@@ -82,6 +83,10 @@
     }
     var password = $('loginPassword');
     if (password) password.value = '';
+    var mfaField = $('mfaField');
+    if (mfaField) mfaField.hidden = true;
+    var mfaInput = $('loginMfa');
+    if (mfaInput) mfaInput.value = '';
     try {
       history.replaceState(null, '', window.location.pathname);
     } catch (error) {
@@ -92,7 +97,7 @@
   function showDashboard() {
     els.loginScreen.hidden = true;
     els.adminApp.hidden = false;
-    var session = store.getAdminSession();
+    var session = auth.getSession();
     var name = session && session.name ? session.name : 'Admin Haji Yuk';
     document.querySelectorAll('.profile-menu__name, .profile-menu__meta strong').forEach(function (el) {
       el.textContent = name;
@@ -112,6 +117,8 @@
     var form = $('adminLoginForm');
     var toggle = $('passwordToggle');
     var password = $('loginPassword');
+    var mfaField = $('mfaField');
+    var mfaInput = $('loginMfa');
 
     if (toggle && password) {
       toggle.addEventListener('click', function () {
@@ -125,11 +132,12 @@
     }
 
     if (!form) return;
-    form.addEventListener('submit', function (event) {
+    form.addEventListener('submit', async function (event) {
       event.preventDefault();
       var username = $('loginUsername').value.trim();
       var pass = password.value;
       var errorBox = $('loginError');
+      var code = mfaField && !mfaField.hidden && mfaInput ? mfaInput.value.trim() : '';
 
       if (!username || !pass) {
         errorBox.textContent = 'Username dan password wajib diisi.';
@@ -137,18 +145,37 @@
         return;
       }
 
-      var result = store.loginAdmin(username, pass);
+      var submit = form.querySelector('button[type="submit"]');
+      if (submit) submit.disabled = true;
+      var result = await auth.login(username, pass, 'admin', code);
+      if (submit) submit.disabled = false;
+
       if (!result.ok) {
+        if (result.mfaRequired) {
+          if (mfaField) mfaField.hidden = false;
+          if (mfaInput) {
+            mfaInput.value = '';
+            mfaInput.focus();
+          }
+          errorBox.textContent = result.message;
+          errorBox.hidden = false;
+          return;
+        }
         errorBox.textContent = result.message;
         errorBox.hidden = false;
         $('loginPassword').setAttribute('aria-invalid', 'true');
         $('loginUsername').setAttribute('aria-invalid', 'true');
+        if (result.locked) {
+          $('loginPassword').removeAttribute('aria-invalid');
+          $('loginUsername').removeAttribute('aria-invalid');
+        }
         return;
       }
 
       $('loginUsername').removeAttribute('aria-invalid');
       $('loginPassword').removeAttribute('aria-invalid');
       form.reset();
+      if (mfaField) mfaField.hidden = true;
       errorBox.hidden = true;
       showDashboard();
       ui.toast('Selamat datang kembali, Admin.');
@@ -156,11 +183,19 @@
   }
 
   function logout() {
-    store.logoutAdmin();
+    auth.logout();
     ui.closeAllModals();
     closeSidebar();
     showLogin();
     ui.toast('Anda telah keluar dari dashboard.', 'info');
+  }
+
+  function guardSession() {
+    if (!auth.isLoggedIn('admin')) {
+      showLogin('Sesi berakhir atau tidak valid. Silakan masuk kembali.');
+      return false;
+    }
+    return true;
   }
 
   /* ------------------------------------------------------------------ */
@@ -218,7 +253,7 @@
   }
 
   function refreshAfterChange() {
-    if (!store.isAdminLoggedIn()) return;
+    if (!auth.isLoggedIn('admin')) return;
     refreshBadges();
     renderView(state.view);
     if (state.view !== 'overview') {
@@ -961,7 +996,7 @@
       esc(src) +
       '" alt="' +
       esc(alt || 'Gambar paket') +
-      '" loading="lazy" onerror="this.classList.add(\'is-broken\')" />'
+      '" loading="lazy" />'
     );
   }
 
@@ -1918,21 +1953,208 @@
   /* ------------------------------------------------------------------ */
 
   function renderSettings() {
-    var session = store.getAdminSession();
+    var session = auth.getSession();
     if (session) {
-      var label = document.querySelector('[data-admin-name]');
-      if (label) label.textContent = session.name;
+      document.querySelectorAll('[data-admin-name]').forEach(function (label) {
+        label.textContent = session.name;
+      });
+      var email = $('adminEmail');
+      if (email) email.textContent = session.email;
+      var lastLogin = $('adminLastLogin');
+      if (lastLogin) {
+        lastLogin.textContent = session.lastLoginAt
+          ? store.formatDateTime(session.lastLoginAt)
+          : 'Sesi pertama akun ini';
+      }
+      var left = $('adminSessionLeft');
+      if (left) left.textContent = auth.sessionMinutesLeft() + ' menit lagi (idle ' + auth.IDLE_MINUTES + ' menit)';
+      var countdown = $('sessionCountdown');
+      if (countdown) countdown.textContent = 'Sisa waktu sesi ini: sekitar ' + auth.sessionMinutesLeft() + ' menit.';
     }
+    renderMfaState();
+    renderSecurityLogs();
+  }
+
+  function renderMfaState() {
+    var enabled = auth.mfaEnabled();
+    var status = $('mfaStatus');
+    var enableBtn = $('mfaEnableBtn');
+    var disableForm = $('mfaDisableForm');
+    if (status) {
+      status.textContent = enabled
+        ? 'MFA aktif. Login admin memerlukan kode 6 digit dari aplikasi authenticator.'
+        : 'MFA belum aktif. Disarankan untuk mengaktifkannya demi keamanan akun admin.';
+    }
+    if (enableBtn) enableBtn.hidden = enabled;
+    if (disableForm) disableForm.hidden = !enabled;
+  }
+
+  function renderSecurityLogs() {
+    var host = $('securityLogList');
+    if (!host) return;
+    var logs = store.getLogs().filter(function (entry) {
+      return entry.type === 'auth' || entry.type === 'security' || entry.type === 'system';
+    }).slice(0, 25);
+    if (!logs.length) {
+      host.innerHTML = '<p class="muted">Belum ada aktivitas keamanan yang tercatat.</p>';
+      return;
+    }
+    host.innerHTML = logs.map(function (entry) {
+      return (
+        '<div class="security-log">' +
+        '<div class="security-log__head"><strong>' + esc(entry.action) + '</strong>' +
+        '<time>' + esc(store.formatDateTime(entry.at)) + '</time></div>' +
+        '<p>' + esc(entry.detail) + '</p>' +
+        '<span class="security-log__actor">' + esc(entry.actor || 'Sistem') + '</span>' +
+        '</div>'
+      );
+    }).join('');
   }
 
   function initSettings() {
+    var passwordForm = $('adminPasswordForm');
+    if (passwordForm) {
+      passwordForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var error = $('adminPasswordError');
+        if (error) error.textContent = '';
+        var result = await auth.changePassword(
+          $('currentAdminPassword').value,
+          $('newAdminPassword').value,
+          $('confirmAdminPassword').value
+        );
+        if (!result.ok) {
+          if (error) error.textContent = result.message;
+          return;
+        }
+        passwordForm.reset();
+        ui.toast(result.message);
+        renderSecurityLogs();
+      });
+    }
+
+    var mfaEnable = $('mfaEnableBtn');
+    if (mfaEnable) {
+      mfaEnable.addEventListener('click', function () {
+        var setup = auth.startMfaSetup();
+        if (!setup.ok) {
+          ui.toast(setup.message, 'error');
+          return;
+        }
+        var panel = $('mfaSetupPanel');
+        var secret = $('mfaSecret');
+        var link = $('mfaOtpLink');
+        if (secret) secret.textContent = setup.secret;
+        if (link) link.setAttribute('href', setup.otpauth);
+        if (panel) panel.hidden = false;
+        mfaEnable.hidden = true;
+        var code = $('mfaSetupCode');
+        if (code) {
+          code.value = '';
+          code.focus();
+        }
+      });
+    }
+
+    var mfaCancel = $('mfaCancelBtn');
+    if (mfaCancel) {
+      mfaCancel.addEventListener('click', function () {
+        auth.cancelMfaSetup();
+        var panel = $('mfaSetupPanel');
+        if (panel) panel.hidden = true;
+        renderMfaState();
+      });
+    }
+
+    var mfaConfirm = $('mfaConfirmBtn');
+    if (mfaConfirm) {
+      mfaConfirm.addEventListener('click', async function () {
+        var error = $('mfaSetupError');
+        if (error) error.textContent = '';
+        var result = await auth.confirmMfaSetup(($('mfaSetupCode') || {}).value || '');
+        if (!result.ok) {
+          if (error) error.textContent = result.message;
+          return;
+        }
+        var panel = $('mfaSetupPanel');
+        if (panel) panel.hidden = true;
+        ui.toast(result.message);
+        renderMfaState();
+        renderSecurityLogs();
+      });
+    }
+
+    var mfaDisable = $('mfaDisableForm');
+    if (mfaDisable) {
+      mfaDisable.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var error = $('mfaDisableError');
+        if (error) error.textContent = '';
+        var result = await auth.disableMfa(
+          ($('mfaDisablePassword') || {}).value || '',
+          ($('mfaDisableCode') || {}).value || ''
+        );
+        if (!result.ok) {
+          if (error) error.textContent = result.message;
+          return;
+        }
+        mfaDisable.reset();
+        ui.toast(result.message);
+        renderMfaState();
+        renderSecurityLogs();
+      });
+    }
+
+    var exportBtn = $('exportBackupBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', function () {
+        var result = auth.exportBackup();
+        var status = $('backupStatus');
+        if (status) status.textContent = result.ok ? 'Backup JSON berhasil diunduh.' : result.message;
+        if (!result.ok) ui.toast(result.message, 'error');
+        else ui.toast('Backup data berhasil dibuat.');
+      });
+    }
+
+    var importBtn = $('importBackupBtn');
+    var restoreFile = $('restoreFile');
+    if (importBtn && restoreFile) {
+      importBtn.addEventListener('click', function () {
+        restoreFile.click();
+      });
+      restoreFile.addEventListener('change', function () {
+        var file = restoreFile.files && restoreFile.files[0];
+        restoreFile.value = '';
+        if (!file) return;
+        ui.confirmDialog({
+          title: 'Pulihkan data dari backup?',
+          message:
+            'Data paket, permintaan, panduan, pengumuman, dan log saat ini akan diganti dengan isi backup. Tindakan ini tidak dapat dibatalkan.',
+          confirmLabel: 'Ya, pulihkan data',
+          tone: 'primary'
+        }).then(async function (confirmed) {
+          if (!confirmed) return;
+          var result = await auth.restoreBackup(file);
+          var status = $('backupStatus');
+          if (status) status.textContent = result.message;
+          if (!result.ok) {
+            ui.toast(result.message, 'error');
+            return;
+          }
+          refreshAfterChange();
+          renderSettings();
+          ui.toast(result.message);
+        });
+      });
+    }
+
     var reset = $('resetDataAdmin');
     if (reset) {
       reset.addEventListener('click', function () {
         ui.confirmDialog({
           title: 'Hapus seluruh data simulasi?',
           message:
-            'Semua paket, permintaan pendaftaran, panduan, pengumuman, dan log aktivitas di browser ini akan dikembalikan ke kondisi awal. Tindakan ini tidak dapat dibatalkan.',
+            'Semua paket, permintaan pendaftaran, panduan, dan pengumuman di browser ini akan dikembalikan ke kondisi awal. Akun, sesi, dan log audit tetap disimpan. Tindakan ini tidak dapat dibatalkan.',
           confirmLabel: 'Ya, hapus semua data',
           tone: 'danger'
         }).then(function (confirmed) {
@@ -2003,12 +2225,18 @@
   /* Inisialisasi                                                       */
   /* ------------------------------------------------------------------ */
 
-  function init() {
+  async function init() {
     els.loginScreen = $('loginScreen');
     els.adminApp = $('adminApp');
 
     store.init();
+    var authReady = await auth.init();
     initLogin();
+
+    if (!authReady.ok) {
+      showLogin(authReady.message);
+      return;
+    }
 
     ui.initModalDismiss();
     initNavigation();
@@ -2022,7 +2250,7 @@
 
     var hashView = (window.location.hash || '').replace('#/', '');
 
-    if (!store.isAdminLoggedIn()) {
+    if (!auth.isLoggedIn('admin')) {
       showLogin();
       return;
     }
@@ -2030,6 +2258,21 @@
     showDashboard();
 
     if (VIEWS.indexOf(hashView) !== -1) switchView(hashView, true);
+
+    window.setInterval(function () {
+      if (!auth.isLoggedIn('admin')) {
+        ui.closeAllModals();
+        closeSidebar();
+        showLogin('Sesi berakhir karena tidak ada aktivitas. Silakan masuk kembali.');
+        return;
+      }
+      if (state.view === 'settings') {
+        var left = $('adminSessionLeft');
+        if (left) left.textContent = auth.sessionMinutesLeft() + ' menit lagi (idle ' + auth.IDLE_MINUTES + ' menit)';
+        var countdown = $('sessionCountdown');
+        if (countdown) countdown.textContent = 'Sisa waktu sesi ini: sekitar ' + auth.sessionMinutesLeft() + ' menit.';
+      }
+    }, 30000);
   }
 
   if (document.readyState === 'loading') {

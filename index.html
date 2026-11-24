@@ -58,6 +58,10 @@
           <button type="button" data-text-scale="large" title="Ukuran teks besar" aria-pressed="false">A+</button>
           <button type="button" data-text-scale="xlarge" title="Ukuran teks sangat besar" aria-pressed="false">A++</button>
         </div>
+        <div class="account-area" id="accountArea">
+          <a class="account-chip" href="#/masuk" data-go="masuk" id="accountLink">Masuk</a>
+          <button type="button" class="account-logout" id="accountLogout" hidden>Keluar</button>
+        </div>
       </div>
     </div>
   </header>
@@ -367,7 +371,7 @@
           <p class="eyebrow">Status Pendaftaran</p>
           <h1>Pantau permintaan Anda</h1>
           <p class="lead">
-            Halaman ini hanya menampilkan permintaan yang dibuat dari browser ini. Status yang
+            Halaman ini hanya menampilkan permintaan milik akun yang sedang masuk. Status yang
             tampil menunjukkan proses tindak lanjut melalui aplikasi Haji Yuk, bukan persetujuan
             pemerintah atau jaminan keberangkatan.
           </p>
@@ -385,7 +389,7 @@
         <div id="statusEmpty" class="empty-state" hidden>
           <span class="empty-state__icon" aria-hidden="true">📋</span>
           <h3>Belum ada permintaan pendaftaran</h3>
-          <p>Permintaan yang Anda kirim dari browser ini akan muncul di sini.</p>
+          <p>Permintaan yang Anda kirim dengan akun ini akan muncul di sini.</p>
           <a class="btn btn--primary" href="#/pendaftaran" data-go="pendaftaran">Mulai Pendaftaran</a>
         </div>
       </div>
@@ -435,8 +439,42 @@
           </p>
         </div>
 
+        <div class="card" id="accountCard">
+          <h2>Akun &amp; keamanan</h2>
+          <div id="accountInfo" class="account-info">
+            <p class="muted">Anda belum masuk. <a href="#/masuk" data-go="masuk">Masuk atau daftar akun</a> untuk menyimpan permintaan pada akun Anda.</p>
+          </div>
+          <div id="accountSecurity" hidden>
+            <dl class="account-info" id="accountMeta"></dl>
+            <form id="changePasswordForm" class="form-grid" novalidate>
+              <div class="field field--full">
+                <h3>Ganti password</h3>
+                <p class="field-hint">Minimal 8 karakter, memuat huruf dan angka.</p>
+              </div>
+              <div class="field">
+                <label for="currentPassword">Password saat ini</label>
+                <input type="password" id="currentPassword" autocomplete="current-password" />
+              </div>
+              <div class="field">
+                <label for="newPassword">Password baru</label>
+                <input type="password" id="newPassword" autocomplete="new-password" />
+              </div>
+              <div class="field">
+                <label for="confirmPassword">Ulangi password baru</label>
+                <input type="password" id="confirmPassword" autocomplete="new-password" />
+              </div>
+              <p class="field-error" id="passwordError" role="alert"></p>
+              <div class="form-actions form-actions--start">
+                <button type="submit" class="btn btn--primary">Perbarui Password</button>
+                <button type="button" class="btn btn--ghost" id="profileLogout">Keluar dari Akun</button>
+              </div>
+            </form>
+            <p class="field-hint" id="sessionInfo"></p>
+          </div>
+        </div>
+
         <div class="card">
-          <h2>Data pengguna</h2>
+          <h2>Data kontak</h2>
           <form id="profileForm" class="form-grid">
             <div class="field">
               <label for="profileName">Nama</label>
@@ -470,9 +508,165 @@
           <p class="muted">
             Prototype ini menyimpan paket, permintaan pendaftaran, panduan, dan pengumuman di
             <strong>localStorage</strong> browser. Data tidak tersinkronisasi ke perangkat lain dan
-            dapat hilang bila data browser dibersihkan.
+            dapat hilang bila data browser dibersihkan. Akun dan log audit tidak dihapus oleh tombol
+            di bawah ini.
           </p>
           <button type="button" class="btn btn--danger" id="resetDataBtn">Hapus Seluruh Data Simulasi</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ MASUK / DAFTAR ============================ -->
+    <section class="page" id="page-masuk" data-page="masuk" hidden>
+      <div class="container container--narrow">
+        <div class="page-head">
+          <p class="eyebrow">Akun</p>
+          <h1>Masuk atau daftar akun</h1>
+          <p class="lead">
+            Akun diperlukan untuk mengirim permintaan pendaftaran dan memantau statusnya. Password
+            disimpan dalam bentuk hash PBKDF2 dengan salt acak, bukan teks biasa.
+          </p>
+        </div>
+
+        <div class="auth-layout">
+          <div class="card auth-card">
+            <div class="auth-tabs" role="tablist" aria-label="Pilih masuk atau daftar">
+              <button type="button" class="auth-tab is-active" data-auth-tab="login" role="tab" aria-selected="true">Masuk</button>
+              <button type="button" class="auth-tab" data-auth-tab="register" role="tab" aria-selected="false">Daftar</button>
+            </div>
+
+            <form id="loginForm" class="auth-form" novalidate>
+              <div class="field">
+                <label for="loginEmail">Email atau username</label>
+                <input type="text" id="loginEmail" autocomplete="username" placeholder="nama@email.com" />
+              </div>
+              <div class="field">
+                <label for="userLoginPassword">Password</label>
+                <div class="password-field">
+                  <input type="password" id="userLoginPassword" autocomplete="current-password" placeholder="Masukkan password" />
+                  <button type="button" class="password-toggle" data-password-toggle="userLoginPassword" aria-label="Tampilkan password" aria-pressed="false"><span aria-hidden="true">👁</span></button>
+                </div>
+              </div>
+              <div class="login-error" id="userLoginError" role="alert" hidden></div>
+              <button type="submit" class="btn btn--primary btn--block btn--lg">Masuk</button>
+              <p class="field-hint">Maksimal 5 percobaan per 15 menit. Sesi berakhir otomatis setelah 20 menit tidak aktif.</p>
+            </form>
+
+            <form id="registerForm" class="auth-form" novalidate hidden>
+              <div class="field">
+                <label for="registerName">Nama lengkap</label>
+                <input type="text" id="registerName" autocomplete="name" placeholder="Contoh: Siti Aminah" />
+              </div>
+              <div class="field">
+                <label for="registerEmail">Email</label>
+                <input type="email" id="registerEmail" autocomplete="email" placeholder="nama@email.com" />
+              </div>
+              <div class="field">
+                <label for="registerPassword">Password</label>
+                <div class="password-field">
+                  <input type="password" id="registerPassword" autocomplete="new-password" placeholder="Minimal 8 karakter" />
+                  <button type="button" class="password-toggle" data-password-toggle="registerPassword" aria-label="Tampilkan password" aria-pressed="false"><span aria-hidden="true">👁</span></button>
+                </div>
+                <p class="field-hint">Minimal 8 karakter dan memuat huruf serta angka.</p>
+              </div>
+              <div class="field">
+                <label for="registerConfirm">Ulangi password</label>
+                <input type="password" id="registerConfirm" autocomplete="new-password" placeholder="Ulangi password" />
+              </div>
+              <label class="checkbox-field">
+                <input type="checkbox" id="registerConsent" />
+                <span>Saya menyetujui <a href="#/privasi" data-go="privasi">kebijakan privasi</a> dan memahami bahwa data prototype ini tersimpan di browser saya.</span>
+              </label>
+              <div class="login-error" id="registerError" role="alert" hidden></div>
+              <button type="submit" class="btn btn--primary btn--block btn--lg">Buat Akun</button>
+            </form>
+
+            <p class="auth-switch">
+              <span id="authSwitchText">Belum punya akun?</span>
+              <button type="button" class="link-button" id="authSwitchBtn">Daftar sekarang</button>
+            </p>
+          </div>
+
+          <aside class="auth-aside">
+            <h2>Kenapa perlu akun?</h2>
+            <ul class="auth-points">
+              <li>Permintaan pendaftaran terhubung ke akun, bukan sekadar browser.</li>
+              <li>Status tindak lanjut hanya dapat dilihat pemilik akun.</li>
+              <li>Password di-hash PBKDF2-SHA256 dengan salt acak.</li>
+              <li>Percobaan login dibatasi dan sesi berakhir otomatis.</li>
+            </ul>
+            <p class="auth-note">
+              Admin memiliki halaman terpisah dengan MFA opsional. <a href="admin.html">Buka Area Admin</a>.
+            </p>
+            <p class="auth-note">
+              Ini prototype frontend. Untuk layanan nyata, autentikasi dan penyimpanan data wajib
+              memakai backend dengan sesi di server.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ KEBIJAKAN PRIVASI ============================ -->
+    <section class="page" id="page-privasi" data-page="privasi" hidden>
+      <div class="container container--narrow">
+        <div class="page-head">
+          <p class="eyebrow">Kebijakan Privasi</p>
+          <h1>Data yang dikumpulkan &amp; hak Anda</h1>
+          <p class="lead">
+            Ringkasan transparan tentang data apa yang diproses prototype Haji Yuk, untuk apa, dan
+            bagaimana Anda dapat menghapusnya.
+          </p>
+        </div>
+
+        <div class="privacy-stack">
+          <article class="card">
+            <h2>1. Data yang dikumpulkan</h2>
+            <ul class="help-links">
+              <li>Akun: nama, email, dan hash password (password asli tidak disimpan).</li>
+              <li>Kontak: nomor HP/WhatsApp dan nama calon jamaah pada formulir.</li>
+              <li>Permintaan: paket pilihan, rencana keberangkatan, dan catatan kebutuhan.</li>
+              <li>Teknis: log aktivitas dan preferensi ukuran teks.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h2>2. Tujuan pemrosesan</h2>
+            <p>
+              Data dipakai untuk menampilkan status permintaan, menghubungi Anda terkait tindak
+              lanjut, dan menjaga keamanan akun (audit login, pembatasan percobaan). Data tidak
+              dijual atau dipakai untuk iklan.
+            </p>
+          </article>
+          <article class="card">
+            <h2>3. Tempat penyimpanan &amp; masa simpan</h2>
+            <p>
+              Seluruh data prototype disimpan di <strong>localStorage browser perangkat Anda</strong>
+              dan tidak dikirim ke server. Log audit disimpan maksimal 90 hari atau 300 entri
+              terakhir. Menghapus data browser akan menghapus semuanya secara permanen.
+            </p>
+          </article>
+          <article class="card">
+            <h2>4. Hak Anda</h2>
+            <p>
+              Anda dapat mengubah nama dan password melalui halaman Profil, memantau riwayat
+              permintaan, serta menghapus data simulasi melalui tombol di halaman Profil. Untuk
+              pertanyaan privasi, hubungi petugas melalui halaman Bantuan.
+            </p>
+          </article>
+          <article class="card">
+            <h2>5. Kontrol keamanan</h2>
+            <ul class="help-links">
+              <li>Password di-hash PBKDF2-SHA256 (150.000 iterasi) dengan salt acak per akun.</li>
+              <li>Rate limit login 5 percobaan per 15 menit dan kunci sementara 15 menit.</li>
+              <li>MFA TOTP opsional untuk admin; sesi kedaluwarsa setelah 20 menit diam.</li>
+              <li>Input pengguna di-escape sebelum dirender untuk mencegah XSS.</li>
+              <li>Header keamanan (CSP, HSTS, nosniff, frame-ancestors) aktif saat di-deploy.</li>
+            </ul>
+          </article>
+          <p class="notice notice--warn">
+            Prototype ini bukan layanan pendaftaran haji resmi. Untuk produksi, diperlukan backend,
+            enkripsi data saat transit dan diam, serta kebijakan retensi yang disetujui pemilik data.
+          </p>
         </div>
       </div>
     </section>
@@ -566,6 +760,7 @@
         <a href="#/status" data-go="status">Status</a>
         <a href="#/panduan" data-go="panduan">Panduan</a>
         <a href="#/bantuan" data-go="bantuan">Bantuan</a>
+        <a href="#/privasi" data-go="privasi">Privasi</a>
       </nav>
       <div class="site-footer__meta">
         <p>
@@ -607,6 +802,7 @@
   </noscript>
 
   <script src="assets/js/store.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/ui.js"></script>
   <script src="assets/js/app.js"></script>
 </body>

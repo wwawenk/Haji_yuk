@@ -1142,3 +1142,82 @@
 
   .login-card { padding: 1.5rem; }
 }
+
+/* ============================== Keamanan & MFA ============================== */
+
+.login-demo__hint {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.settings-card--wide { grid-column: 1 / -1; }
+
+.settings-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.settings-card__head h2 { margin-bottom: 0; }
+
+.settings-subtitle {
+  margin: 1.6rem 0 0.4rem;
+  font-size: 0.98rem;
+}
+
+.mfa-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--green-50);
+}
+
+.mfa-panel .field { margin-bottom: 0.75rem; }
+
+.mfa-secret {
+  display: block;
+  margin-bottom: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  word-break: break-all;
+  user-select: all;
+}
+
+.security-log {
+  padding: 0.7rem 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.security-log:last-child { border-bottom: 0; }
+
+.security-log__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+}
+
+.security-log__head time { font-size: 0.75rem; color: var(--muted); }
+
+.security-log p {
+  margin: 0.2rem 0;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+
+.security-log__actor { font-size: 0.72rem; color: var(--muted); }
+
+.settings-actions input[type="file"] { display: none; }
+
+@media (max-width: 760px) {
+  .settings-card--wide { grid-column: auto; }
+  .settings-card__head { flex-direction: column; align-items: flex-start; }
+}
