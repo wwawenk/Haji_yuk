@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Ilustrasi paket perjalanan umroh">
+  <defs>
+    <linearGradient id="umrohBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14493a"/>
+      <stop offset="1" stop-color="#0f6b4c"/>
+    </linearGradient>
+    <linearGradient id="umrohGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4e7c2"/>
+      <stop offset="1" stop-color="#d9b96e"/>
+    </linearGradient>
+    <pattern id="umrohPattern" width="64" height="64" patternUnits="userSpaceOnUse">
+      <circle cx="32" cy="32" r="20" fill="none" stroke="#d9b96e" stroke-opacity="0.14" stroke-width="1.2"/>
+      <circle cx="32" cy="32" r="4" fill="#d9b96e" fill-opacity="0.18"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="600" fill="url(#umrohBg)"/>
+  <rect width="800" height="600" fill="url(#umrohPattern)"/>
+  <circle cx="660" cy="120" r="120" fill="#d9b96e" opacity="0.12"/>
+
+  <!-- Masjid Nabawi dengan kubah hijau -->
+  <g transform="translate(120 240)">
+    <rect x="0" y="120" width="560" height="180" fill="#0b3a2e"/>
+    <path d="M100 120 q55 -95 110 0 z" fill="url(#umrohGold)"/>
+    <path d="M350 120 q55 -95 110 0 z" fill="url(#umrohGold)"/>
+    <path d="M225 120 q55 -120 110 0 z" fill="#1f805d" stroke="#d9b96e" stroke-width="3"/>
+    <rect x="275" y="0" width="10" height="26" fill="#d9b96e"/>
+    <circle cx="280" cy="-2" r="9" fill="#d9b96e"/>
+    <g fill="none" stroke="#d9b96e" stroke-width="2.5" opacity="0.65">
+      <path d="M30 300 v-120 a30 30 0 0 1 60 0 v120"/>
+      <path d="M140 300 v-120 a30 30 0 0 1 60 0 v120"/>
+      <path d="M250 300 v-120 a30 30 0 0 1 60 0 v120"/>
+      <path d="M360 300 v-120 a30 30 0 0 1 60 0 v120"/>
+      <path d="M470 300 v-120 a30 30 0 0 1 60 0 v120"/>
+    </g>
+    <rect x="-20" y="60" width="26" height="240" fill="#0b3a2e"/>
+    <rect x="560" y="60" width="26" height="240" fill="#0b3a2e"/>
+    <path d="M-20 60 l13 -34 l13 34 z" fill="#d9b96e"/>
+    <path d="M560 60 l13 -34 l13 34 z" fill="#d9b96e"/>
+  </g>
+
+  <text x="400" y="530" font-family="Segoe UI, system-ui, sans-serif" font-size="30" font-weight="700" fill="#f7f8f3" text-anchor="middle" letter-spacing="3">UMROH</text>
+</svg>

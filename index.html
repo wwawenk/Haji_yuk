@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="id" data-text-scale="normal">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#105c43" />
+  <meta
+    name="description"
+    content="Haji Yuk — Sahabat Perjalanan Ibadah Anda. Informasi layanan, katalog paket Haji dan Umroh, pendaftaran awal, serta panduan ibadah."
+  />
+  <title>Haji Yuk — Sahabat Perjalanan Ibadah Anda</title>
+  <link rel="icon" href="assets/img/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Lewati ke konten utama</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="#/beranda" data-go="beranda" aria-label="Haji Yuk — Beranda">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="40" height="40" role="presentation">
+            <rect width="48" height="48" rx="14" fill="#105c43" />
+            <path d="M24 9c-6 5-9 10-9 15a9 9 0 0 0 18 0c0-5-3-10-9-15Z" fill="#d9b96e" />
+            <path d="M24 18c-2.8 2.6-4.2 5-4.2 7.3a4.2 4.2 0 0 0 8.4 0c0-2.3-1.4-4.7-4.2-7.3Z" fill="#105c43" />
+          </svg>
+        </span>
+        <span class="brand__text">
+          <strong>HAJI YUK</strong>
+          <small>Sahabat Perjalanan Ibadah Anda</small>
+        </span>
+      </a>
+
+      <button
+        type="button"
+        class="nav-toggle"
+        id="navToggle"
+        aria-expanded="false"
+        aria-controls="siteNav"
+        aria-label="Buka menu navigasi"
+      >
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="site-nav" id="siteNav" aria-label="Navigasi utama">
+        <a href="#/beranda" data-go="beranda" class="is-active">Beranda</a>
+        <a href="#/katalog" data-go="katalog">Katalog</a>
+        <a href="#/pendaftaran" data-go="pendaftaran">Pendaftaran</a>
+        <a href="#/status" data-go="status">Status</a>
+        <a href="#/panduan" data-go="panduan">Panduan</a>
+        <a href="#/profil" data-go="profil">Profil</a>
+        <a href="#/bantuan" data-go="bantuan">Bantuan</a>
+      </nav>
+
+      <div class="header-tools">
+        <div class="text-size" role="group" aria-label="Pengaturan ukuran teks">
+          <button type="button" data-text-scale="normal" title="Ukuran teks normal" aria-pressed="true">A</button>
+          <button type="button" data-text-scale="large" title="Ukuran teks besar" aria-pressed="false">A+</button>
+          <button type="button" data-text-scale="xlarge" title="Ukuran teks sangat besar" aria-pressed="false">A++</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="mainContent">
+    <!-- ============================ BERANDA ============================ -->
+    <section class="page is-active" id="page-beranda" data-page="beranda">
+      <div class="container">
+        <div class="hero">
+          <div class="hero__content">
+            <p class="eyebrow">Assalamu'alaikum, selamat datang</p>
+            <h1>Rencanakan perjalanan ibadah Anda dengan tenang.</h1>
+            <p class="hero__lead">
+              Haji Yuk membantu calon jamaah dan keluarga melihat informasi layanan, memilih paket
+              Haji atau Umroh, mengajukan permintaan pendaftaran awal, dan memantau tindak lanjutnya
+              dalam satu tempat.
+            </p>
+            <div class="hero__actions">
+              <a class="btn btn--primary btn--lg" href="#/katalog" data-go="katalog">Lihat Katalog Paket</a>
+              <a class="btn btn--outline btn--lg" href="#/pendaftaran" data-go="pendaftaran">Ajukan Pendaftaran</a>
+            </div>
+            <ul class="hero__points">
+              <li>Pendampingan untuk jamaah lanjut usia</li>
+              <li>Informasi ditulis dengan bahasa sederhana</li>
+              <li>Status permintaan dapat dipantau</li>
+            </ul>
+          </div>
+          <div class="hero__media">
+            <img src="assets/img/hero.svg" alt="Ilustrasi suasana masjid dan suasana ibadah" width="600" height="400" />
+            <div class="hero__note">
+              <strong>Prototype</strong>
+              <span>Data paket dan harga masih simulasi.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section" aria-labelledby="announcementTitle">
+        <div class="container">
+          <div class="section__head">
+            <div>
+              <p class="eyebrow">Informasi Penting</p>
+              <h2 id="announcementTitle">Pengumuman terbaru</h2>
+            </div>
+          </div>
+          <div id="homeAnnouncements" class="announcement-list" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="section section--tint" aria-labelledby="servicesTitle">
+        <div class="container">
+          <div class="section__head">
+            <div>
+              <p class="eyebrow">Layanan</p>
+              <h2 id="servicesTitle">Pilih jenis perjalanan ibadah</h2>
+            </div>
+          </div>
+          <div class="service-grid">
+            <article class="service-card">
+              <span class="service-card__icon" aria-hidden="true">🕋</span>
+              <h3>Perjalanan Haji</h3>
+              <p>
+                Layanan haji reguler dan haji khusus dengan bimbingan manasik serta pendampingan
+                petugas selama perjalanan.
+              </p>
+              <button type="button" class="btn btn--primary" data-go="katalog" data-filter="Haji">
+                Lihat Paket Haji
+              </button>
+            </article>
+            <article class="service-card">
+              <span class="service-card__icon" aria-hidden="true">🌙</span>
+              <h3>Perjalanan Umroh</h3>
+              <p>
+                Paket umroh reguler, umroh plus, hingga umroh Ramadhan dengan akomodasi dan
+                bimbingan ibadah.
+              </p>
+              <button type="button" class="btn btn--primary" data-go="katalog" data-filter="Umroh">
+                Lihat Paket Umroh
+              </button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="featuredTitle">
+        <div class="container">
+          <div class="section__head">
+            <div>
+              <p class="eyebrow">Katalog</p>
+              <h2 id="featuredTitle">Paket pilihan</h2>
+            </div>
+            <a class="link-arrow" href="#/katalog" data-go="katalog">Lihat semua paket →</a>
+          </div>
+          <div id="homePackages" class="package-grid"></div>
+        </div>
+      </section>
+
+      <section class="section section--tint" aria-labelledby="stepsTitle">
+        <div class="container">
+          <div class="section__head">
+            <div>
+              <p class="eyebrow">Alur Layanan</p>
+              <h2 id="stepsTitle">Cukup empat langkah</h2>
+            </div>
+          </div>
+          <ol class="step-list">
+            <li>
+              <span class="step-list__num">1</span>
+              <h3>Pilih paket</h3>
+              <p>Bandingkan layanan Haji dan Umroh yang tersedia pada katalog.</p>
+            </li>
+            <li>
+              <span class="step-list__num">2</span>
+              <h3>Isi formulir</h3>
+              <p>Lengkapi data calon jamaah dan kebutuhan bantuan.</p>
+            </li>
+            <li>
+              <span class="step-list__num">3</span>
+              <h3>Periksa ringkasan</h3>
+              <p>Pastikan data sudah benar sebelum permintaan dikirim.</p>
+            </li>
+            <li>
+              <span class="step-list__num">4</span>
+              <h3>Pantau status</h3>
+              <p>Lihat catatan tindak lanjut petugas pada halaman Status.</p>
+            </li>
+          </ol>
+          <p class="notice notice--soft">
+            Pengajuan melalui Haji Yuk merupakan permintaan pendaftaran awal, bukan pendaftaran haji
+            resmi dan bukan jaminan keberangkatan.
+          </p>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================ KATALOG ============================ -->
+    <section class="page" id="page-katalog" data-page="katalog" hidden>
+      <div class="container">
+        <div class="page-head">
+          <p class="eyebrow">Katalog Layanan</p>
+          <h1>Paket Haji &amp; Umroh</h1>
+          <p class="lead">
+            Seluruh harga, jadwal, dan fasilitas pada prototype ini masih berupa simulasi dan belum
+            diverifikasi. Silakan konfirmasi kepada petugas.
+          </p>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-field">
+            <span aria-hidden="true">🔍</span>
+            <label class="sr-only" for="catalogSearch">Cari paket</label>
+            <input
+              type="search"
+              id="catalogSearch"
+              placeholder="Cari nama paket atau fasilitas…"
+              autocomplete="off"
+            />
+          </div>
+          <div class="chip-group" id="catalogFilters" role="group" aria-label="Filter kategori paket">
+            <button type="button" class="chip is-active" data-filter="Semua" aria-pressed="true">Semua</button>
+            <button type="button" class="chip" data-filter="Haji" aria-pressed="false">Haji</button>
+            <button type="button" class="chip" data-filter="Umroh" aria-pressed="false">Umroh</button>
+          </div>
+        </div>
+
+        <div id="catalogGrid" class="package-grid"></div>
+        <div id="catalogEmpty" class="empty-state" hidden>
+          <span class="empty-state__icon" aria-hidden="true">🔎</span>
+          <h3>Paket tidak ditemukan</h3>
+          <p>Coba kata kunci lain atau ubah filter kategori.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================== PENDAFTARAN ========================== -->
+    <section class="page" id="page-pendaftaran" data-page="pendaftaran" hidden>
+      <div class="container container--narrow">
+        <div class="page-head">
+          <p class="eyebrow">Pendaftaran Awal</p>
+          <h1>Ajukan permintaan pendaftaran</h1>
+          <p class="lead">
+            Isi data calon jamaah dengan teliti. Permintaan ini akan diperiksa petugas, lalu Anda
+            dapat memantau tindak lanjutnya di halaman Status.
+          </p>
+        </div>
+
+        <ol class="steps" id="regSteps" aria-label="Tahapan pendaftaran">
+          <li class="is-active"><span>1</span> Isi Data</li>
+          <li><span>2</span> Periksa Ringkasan</li>
+          <li><span>3</span> Selesai</li>
+        </ol>
+
+        <form class="form-card" id="registrationForm" novalidate>
+          <div data-reg-step="1">
+            <div class="form-grid">
+              <div class="field">
+                <label for="regName">Nama lengkap calon jamaah <span class="required">*</span></label>
+                <input type="text" id="regName" name="name" autocomplete="name" placeholder="Contoh: Siti Aminah" />
+                <p class="field-error" data-error-for="regName" role="alert"></p>
+              </div>
+
+              <div class="field">
+                <label for="regPhone">Nomor HP / WhatsApp <span class="required">*</span></label>
+                <input type="tel" id="regPhone" name="phone" inputmode="tel" autocomplete="tel" placeholder="Contoh: 081234567890" />
+                <p class="field-hint">Gunakan nomor yang aktif agar petugas dapat menghubungi.</p>
+                <p class="field-error" data-error-for="regPhone" role="alert"></p>
+              </div>
+
+              <div class="field">
+                <label for="regService">Jenis layanan <span class="required">*</span></label>
+                <select id="regService" name="serviceType">
+                  <option value="">Pilih jenis layanan</option>
+                  <option value="Haji">Haji</option>
+                  <option value="Umroh">Umroh</option>
+                </select>
+                <p class="field-error" data-error-for="regService" role="alert"></p>
+              </div>
+
+              <div class="field">
+                <label for="regPackage">Paket atau layanan yang dipilih <span class="required">*</span></label>
+                <select id="regPackage" name="packageId">
+                  <option value="">Pilih jenis layanan terlebih dahulu</option>
+                </select>
+                <p class="field-error" data-error-for="regPackage" role="alert"></p>
+              </div>
+
+              <div class="field">
+                <label for="regDeparture">Rencana keberangkatan <span class="required">*</span></label>
+                <input type="text" id="regDeparture" name="departurePlan" placeholder="Contoh: Maret 2027 / belum menentukan" />
+                <p class="field-hint">Perkiraan waktu berangkat membantu petugas menyiapkan informasi.</p>
+                <p class="field-error" data-error-for="regDeparture" role="alert"></p>
+              </div>
+
+              <div class="field">
+                <label for="regSubmitter">Pihak yang mengisi formulir <span class="required">*</span></label>
+                <select id="regSubmitter" name="submittedBy">
+                  <option value="">Pilih pihak pengisi</option>
+                  <option value="Calon jamaah sendiri">Calon jamaah sendiri</option>
+                  <option value="Anggota keluarga">Anggota keluarga</option>
+                  <option value="Pendamping">Pendamping</option>
+                  <option value="Petugas Haji Yuk">Petugas Haji Yuk</option>
+                </select>
+                <p class="field-error" data-error-for="regSubmitter" role="alert"></p>
+              </div>
+
+              <div class="field field--full">
+                <label for="regNeeds">Catatan atau kebutuhan bantuan</label>
+                <textarea
+                  id="regNeeds"
+                  name="needs"
+                  rows="4"
+                  placeholder="Contoh: calon jamaah menggunakan kursi roda dan membutuhkan pendampingan."
+                ></textarea>
+                <p class="field-hint">Boleh dikosongkan bila tidak ada kebutuhan khusus.</p>
+              </div>
+            </div>
+
+            <label class="checkbox-field">
+              <input type="checkbox" id="regConsent" name="consent" />
+              <span>
+                Saya memahami bahwa formulir ini adalah <strong>permintaan pendaftaran awal</strong>,
+                bukan pendaftaran haji resmi, bukan penerbitan nomor porsi, dan bukan jaminan
+                keberangkatan.
+              </span>
+            </label>
+            <p class="field-error" data-error-for="regConsent" role="alert"></p>
+
+            <div class="form-actions">
+              <a class="btn btn--ghost" href="#/katalog" data-go="katalog">Kembali ke katalog</a>
+              <button type="button" class="btn btn--primary btn--lg" id="toReview">Periksa Ringkasan</button>
+            </div>
+          </div>
+
+          <div data-reg-step="2" hidden>
+            <h2 class="form-title">Periksa ringkasan pendaftaran</h2>
+            <p class="form-subtitle">Pastikan seluruh data sudah benar sebelum dikirim.</p>
+            <div id="reviewSummary" class="review"></div>
+            <div class="form-actions">
+              <button type="button" class="btn btn--ghost" id="backToEdit">Ubah Data</button>
+              <button type="button" class="btn btn--primary btn--lg" id="confirmSubmit">Kirim Permintaan</button>
+            </div>
+          </div>
+
+          <div data-reg-step="3" hidden>
+            <div class="success-panel">
+              <span class="success-panel__icon" aria-hidden="true">✓</span>
+              <h2>Permintaan berhasil dikirim</h2>
+              <p>
+                Nomor permintaan Anda adalah <strong id="newRequestCode">—</strong>. Simpan nomor ini
+                dan pantau statusnya pada halaman Status Pendaftaran.
+              </p>
+              <div id="successSummary" class="review"></div>
+              <div class="form-actions form-actions--center">
+                <button type="button" class="btn btn--primary" id="goStatus">Lihat Status Pendaftaran</button>
+                <button type="button" class="btn btn--ghost" id="newRequest">Ajukan Permintaan Lain</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================ STATUS ============================ -->
+    <section class="page" id="page-status" data-page="status" hidden>
+      <div class="container">
+        <div class="page-head">
+          <p class="eyebrow">Status Pendaftaran</p>
+          <h1>Pantau permintaan Anda</h1>
+          <p class="lead">
+            Halaman ini hanya menampilkan permintaan yang dibuat dari browser ini. Status yang
+            tampil menunjukkan proses tindak lanjut melalui aplikasi Haji Yuk, bukan persetujuan
+            pemerintah atau jaminan keberangkatan.
+          </p>
+        </div>
+
+        <div class="status-toolbar">
+          <p class="muted" id="statusMeta">Memuat data…</p>
+          <div class="status-toolbar__actions">
+            <button type="button" class="btn btn--outline" id="statusRefresh">Muat Ulang</button>
+            <a class="btn btn--primary" href="#/pendaftaran" data-go="pendaftaran">Pendaftaran Baru</a>
+          </div>
+        </div>
+
+        <div id="statusList" class="status-list"></div>
+        <div id="statusEmpty" class="empty-state" hidden>
+          <span class="empty-state__icon" aria-hidden="true">📋</span>
+          <h3>Belum ada permintaan pendaftaran</h3>
+          <p>Permintaan yang Anda kirim dari browser ini akan muncul di sini.</p>
+          <a class="btn btn--primary" href="#/pendaftaran" data-go="pendaftaran">Mulai Pendaftaran</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ PANDUAN =========================== -->
+    <section class="page" id="page-panduan" data-page="panduan" hidden>
+      <div class="container">
+        <div class="page-head">
+          <p class="eyebrow">Panduan Ibadah</p>
+          <h1>Bekal ilmu sebelum berangkat</h1>
+          <p class="lead">
+            Kumpulan panduan Haji, Umroh, persiapan perjalanan, manasik, doa, dan tips. Materi ini
+            perlu ditinjau pembimbing ibadah sebelum dijadikan acuan resmi.
+          </p>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-field">
+            <span aria-hidden="true">🔍</span>
+            <label class="sr-only" for="guideSearch">Cari panduan</label>
+            <input type="search" id="guideSearch" placeholder="Cari judul atau isi panduan…" autocomplete="off" />
+          </div>
+          <div class="chip-group" id="guideFilters" role="group" aria-label="Filter kategori panduan">
+            <button type="button" class="chip is-active" data-category="Semua" aria-pressed="true">Semua</button>
+          </div>
+        </div>
+
+        <div id="guideGrid" class="guide-grid"></div>
+        <div id="guideEmpty" class="empty-state" hidden>
+          <span class="empty-state__icon" aria-hidden="true">📖</span>
+          <h3>Panduan tidak ditemukan</h3>
+          <p>Coba kata kunci lain atau pilih kategori berbeda.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ PROFIL ============================ -->
+    <section class="page" id="page-profil" data-page="profil" hidden>
+      <div class="container container--narrow">
+        <div class="page-head">
+          <p class="eyebrow">Profil</p>
+          <h1>Profil &amp; preferensi</h1>
+          <p class="lead">
+            Data profil membantu petugas menghubungi Anda. Pada prototype ini data hanya tersimpan
+            di browser perangkat ini.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>Data pengguna</h2>
+          <form id="profileForm" class="form-grid">
+            <div class="field">
+              <label for="profileName">Nama</label>
+              <input type="text" id="profileName" autocomplete="name" placeholder="Nama Anda" />
+            </div>
+            <div class="field">
+              <label for="profilePhone">Nomor HP / WhatsApp</label>
+              <input type="tel" id="profilePhone" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" />
+            </div>
+            <div class="field field--full">
+              <p class="field-hint">ID perangkat prototype: <span id="clientIdLabel">—</span></p>
+            </div>
+            <div class="form-actions form-actions--start">
+              <button type="submit" class="btn btn--primary">Simpan Profil</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Ukuran teks</h2>
+          <p class="muted">Perbesar teks agar lebih nyaman dibaca.</p>
+          <div class="text-size-options" role="group" aria-label="Pilih ukuran teks">
+            <button type="button" class="chip" data-text-scale="normal" aria-pressed="true">Normal</button>
+            <button type="button" class="chip" data-text-scale="large" aria-pressed="false">Besar</button>
+            <button type="button" class="chip" data-text-scale="xlarge" aria-pressed="false">Sangat Besar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Data &amp; penyimpanan</h2>
+          <p class="muted">
+            Prototype ini menyimpan paket, permintaan pendaftaran, panduan, dan pengumuman di
+            <strong>localStorage</strong> browser. Data tidak tersinkronisasi ke perangkat lain dan
+            dapat hilang bila data browser dibersihkan.
+          </p>
+          <button type="button" class="btn btn--danger" id="resetDataBtn">Hapus Seluruh Data Simulasi</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ BANTUAN =========================== -->
+    <section class="page" id="page-bantuan" data-page="bantuan" hidden>
+      <div class="container container--narrow">
+        <div class="page-head">
+          <p class="eyebrow">Bantuan</p>
+          <h1>Kami siap membantu</h1>
+          <p class="lead">
+            Butuh bantuan mengisi formulir atau memahami paket? Hubungi petugas Haji Yuk melalui
+            informasi berikut.
+          </p>
+        </div>
+
+        <div class="help-grid">
+          <article class="card">
+            <h2>Hubungi petugas</h2>
+            <ul class="contact-list">
+              <li><span>WhatsApp</span><strong>0812-3456-7890</strong></li>
+              <li><span>Telepon kantor</span><strong>(021) 555-0199</strong></li>
+              <li><span>Email</span><strong>halo@hajiyuk.example</strong></li>
+              <li><span>Jam layanan</span><strong>Senin–Sabtu, 08.00–17.00 WIB</strong></li>
+            </ul>
+            <p class="field-hint">
+              Nomor dan email di atas hanya contoh prototype. Prototype ini tidak mengirim pesan
+              WhatsApp atau email sungguhan.
+            </p>
+          </article>
+
+          <article class="card">
+            <h2>Bantuan cepat</h2>
+            <ul class="help-links">
+              <li><a href="#/pendaftaran" data-go="pendaftaran">Cara mengajukan pendaftaran</a></li>
+              <li><a href="#/status" data-go="status">Cara memantau status permintaan</a></li>
+              <li><a href="#/panduan" data-go="panduan">Membaca panduan ibadah</a></li>
+              <li><a href="#/katalog" data-go="katalog">Membandingkan paket Haji dan Umroh</a></li>
+            </ul>
+            <a class="btn btn--primary" href="#/pendaftaran" data-go="pendaftaran">Buka Formulir Pendaftaran</a>
+          </article>
+        </div>
+
+        <div class="card">
+          <h2>Pertanyaan umum</h2>
+          <div class="faq-list">
+            <details>
+              <summary>Apakah data saya aman?</summary>
+              <p>
+                Pada prototype ini data hanya tersimpan di browser perangkat Anda. Untuk layanan
+                nyata, data calon jamaah memerlukan server aman dengan kontrol akses.
+              </p>
+            </details>
+            <details>
+              <summary>Apakah pengisian formulir berarti sudah mendaftar haji resmi?</summary>
+              <p>
+                Tidak. Formulir Haji Yuk hanya permintaan pendaftaran awal untuk ditindaklanjuti
+                petugas. Pendaftaran haji resmi dilakukan melalui kanal resmi pemerintah.
+              </p>
+            </details>
+            <details>
+              <summary>Mengapa harga paket disebut simulasi?</summary>
+              <p>
+                Seluruh harga, jadwal, dan fasilitas pada prototype belum diverifikasi sehingga
+                ditandai sebagai simulasi. Konfirmasikan kepada petugas sebelum memutuskan.
+              </p>
+            </details>
+            <details>
+              <summary>Bagaimana cara petugas mengelola data?</summary>
+              <p>
+                Petugas masuk melalui tautan <strong>Area Admin</strong> di bagian footer untuk
+                memeriksa permintaan, memperbarui status, dan mengelola paket serta panduan.
+              </p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div class="site-footer__brand">
+        <strong>HAJI YUK</strong>
+        <p>Sahabat Perjalanan Ibadah Anda.</p>
+      </div>
+      <nav class="site-footer__nav" aria-label="Navigasi footer">
+        <a href="#/beranda" data-go="beranda">Beranda</a>
+        <a href="#/katalog" data-go="katalog">Katalog</a>
+        <a href="#/pendaftaran" data-go="pendaftaran">Pendaftaran</a>
+        <a href="#/status" data-go="status">Status</a>
+        <a href="#/panduan" data-go="panduan">Panduan</a>
+        <a href="#/bantuan" data-go="bantuan">Bantuan</a>
+      </nav>
+      <div class="site-footer__meta">
+        <p>
+          Prototype demonstrasi. Data hanya tersimpan secara lokal di browser. Bukan pendaftaran
+          haji resmi dan bukan jaminan keberangkatan.
+        </p>
+        <a class="admin-link" href="admin.html">Area Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal detail paket -->
+  <div class="modal" id="packageModal" role="dialog" aria-modal="true" aria-labelledby="packageModalTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog" role="document">
+      <div class="modal__head">
+        <h2 id="packageModalTitle">Detail Paket</h2>
+        <button type="button" class="icon-button" data-close-modal aria-label="Tutup detail paket">✕</button>
+      </div>
+      <div class="modal__body" id="packageModalBody"></div>
+      <div class="modal__foot" id="packageModalFoot"></div>
+    </div>
+  </div>
+
+  <!-- Modal pratinjau panduan -->
+  <div class="modal" id="guideModal" role="dialog" aria-modal="true" aria-labelledby="guideModalTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog" role="document">
+      <div class="modal__head">
+        <h2 id="guideModalTitle">Panduan</h2>
+        <button type="button" class="icon-button" data-close-modal aria-label="Tutup panduan">✕</button>
+      </div>
+      <div class="modal__body" id="guideModalBody"></div>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="noscript">Aplikasi Haji Yuk memerlukan JavaScript untuk berjalan. Aktifkan JavaScript di browser Anda.</div>
+  </noscript>
+
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

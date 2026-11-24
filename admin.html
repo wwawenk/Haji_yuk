@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="id" data-text-scale="normal">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#105c43" />
+  <meta name="robots" content="noindex" />
+  <title>Dashboard Admin — Haji Yuk</title>
+  <link rel="icon" href="assets/img/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body class="admin-body">
+  <a class="skip-link" href="#adminMain">Lewati ke konten utama</a>
+
+  <!-- ============================ LOGIN ============================ -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-visual">
+      <div class="login-visual__inner">
+        <a class="brand brand--light" href="index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="44" height="44" role="presentation">
+              <rect width="48" height="48" rx="14" fill="#d9b96e" />
+              <path d="M24 9c-6 5-9 10-9 15a9 9 0 0 0 18 0c0-5-3-10-9-15Z" fill="#105c43" />
+            </svg>
+          </span>
+          <span class="brand__text">
+            <strong>HAJI YUK</strong>
+            <small>Sahabat Perjalanan Ibadah Anda</small>
+          </span>
+        </a>
+        <h1>Dashboard Admin</h1>
+        <p class="login-visual__lead">
+          Kelola permintaan pendaftaran, katalog paket, panduan ibadah, dan pengumuman aplikasi Haji
+          Yuk dalam satu tempat.
+        </p>
+        <ul class="login-features">
+          <li>Data permintaan pengguna terhubung langsung</li>
+          <li>Pembaruan status dan catatan tindak lanjut</li>
+          <li>Kelola katalog Haji &amp; Umroh serta konten panduan</li>
+        </ul>
+        <p class="login-visual__note">
+          Prototype frontend. Autentikasi demo ini tidak aman untuk produksi.
+        </p>
+      </div>
+    </div>
+
+    <div class="login-panel">
+      <div class="login-card">
+        <p class="eyebrow">Area Terbatas</p>
+        <h2>Masuk sebagai Admin</h2>
+        <p class="muted">Gunakan akun demo untuk membuka dashboard.</p>
+
+        <form id="adminLoginForm" class="login-form" novalidate>
+          <div class="field">
+            <label for="loginUsername">Username</label>
+            <input
+              type="text"
+              id="loginUsername"
+              name="username"
+              autocomplete="username"
+              placeholder="Masukkan username"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <div class="password-field">
+              <input
+                type="password"
+                id="loginPassword"
+                name="password"
+                autocomplete="current-password"
+                placeholder="Masukkan password"
+                required
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                id="passwordToggle"
+                aria-label="Tampilkan password"
+                aria-pressed="false"
+              >
+                <span aria-hidden="true">👁</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-error" id="loginError" role="alert" hidden></div>
+
+          <button type="submit" class="btn btn--primary btn--lg btn--block">Masuk sebagai Admin</button>
+        </form>
+
+        <div class="login-demo">
+          <strong>Kredensial demo</strong>
+          <span>Username: <code>admin</code></span>
+          <span>Password: <code>admin123</code></span>
+        </div>
+
+        <a class="login-back" href="index.html">← Kembali ke aplikasi utama</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ DASHBOARD ============================ -->
+  <div class="admin-shell" id="adminApp" hidden>
+    <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
+
+    <aside class="sidebar" id="adminSidebar" aria-label="Menu dashboard admin">
+      <div class="sidebar__brand">
+        <a class="brand brand--light" href="admin.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="40" height="40" role="presentation">
+              <rect width="48" height="48" rx="14" fill="#d9b96e" />
+              <path d="M24 9c-6 5-9 10-9 15a9 9 0 0 0 18 0c0-5-3-10-9-15Z" fill="#105c43" />
+            </svg>
+          </span>
+          <span class="brand__text">
+            <strong>HAJI YUK</strong>
+            <small>Dashboard Admin</small>
+          </span>
+        </a>
+        <button type="button" class="sidebar__close" id="sidebarClose" aria-label="Tutup menu">✕</button>
+      </div>
+
+      <nav class="sidebar__nav" aria-label="Navigasi dashboard">
+        <button type="button" class="sidebar__link is-active" data-view="overview">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button type="button" class="sidebar__link" data-view="requests">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2Z"/><path d="M9 9h6M9 13h4"/></svg>
+          <span>Data Pendaftaran</span>
+          <em class="sidebar__count" id="sidebarRequestCount" hidden>0</em>
+        </button>
+        <button type="button" class="sidebar__link" data-view="packages">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="M3 8l9 5 9-5M12 21v-8"/></svg>
+          <span>Kelola Paket</span>
+        </button>
+        <button type="button" class="sidebar__link" data-view="guides">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h5v18H6a2 2 0 0 1-2-2V5Z"/><path d="M20 5a2 2 0 0 0-2-2h-5v18h5a2 2 0 0 0 2-2V5Z"/></svg>
+          <span>Kelola Konten</span>
+        </button>
+        <button type="button" class="sidebar__link" data-view="announcements">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4a2 2 0 0 0 2 2h2l7 4V4L8 8H6a2 2 0 0 0-2 2Z"/><path d="M18 8a5 5 0 0 1 0 8"/></svg>
+          <span>Pengumuman</span>
+        </button>
+        <button type="button" class="sidebar__link" data-view="reports">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-5M12 16V7M16 16v-8"/></svg>
+          <span>Laporan</span>
+        </button>
+        <button type="button" class="sidebar__link" data-view="settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.5a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.5h4l.4-2.5a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z"/></svg>
+          <span>Pengaturan</span>
+        </button>
+      </nav>
+
+      <div class="sidebar__foot">
+        <a class="sidebar__link sidebar__link--plain" href="index.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/><path d="M10 17l5-5-5-5M15 12H4"/></svg>
+          <span>Lihat Aplikasi</span>
+        </a>
+        <button type="button" class="sidebar__link sidebar__link--danger" id="sidebarLogout">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="admin-main-wrap">
+      <header class="topbar">
+        <div class="topbar__left">
+          <button type="button" class="icon-button topbar__menu" id="sidebarToggle" aria-label="Buka menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+          </button>
+          <div>
+            <h1 id="pageTitle">Dashboard</h1>
+            <p class="topbar__sub" id="pageSubtitle">Ringkasan aktivitas aplikasi Haji Yuk</p>
+          </div>
+        </div>
+
+        <div class="topbar__right">
+          <div class="topbar__date">
+            <span id="todayDate">—</span>
+            <small>Selamat datang, Admin</small>
+          </div>
+
+          <div class="notif">
+            <button type="button" class="icon-button notif__button" id="notifButton" aria-label="Notifikasi" aria-expanded="false" aria-controls="notifPanel">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg>
+              <span class="notif__badge" id="notifBadge" hidden>0</span>
+            </button>
+            <div class="notif__panel" id="notifPanel" hidden>
+              <div class="notif__head">
+                <strong>Permintaan perlu diperiksa</strong>
+                <button type="button" class="link-button" id="notifSeeAll">Lihat semua</button>
+              </div>
+              <ul class="notif__list" id="notifList"></ul>
+            </div>
+          </div>
+
+          <div class="profile-menu">
+            <button type="button" class="profile-menu__button" id="profileMenuButton" aria-expanded="false" aria-controls="profileMenu">
+              <span class="avatar" aria-hidden="true">A</span>
+              <span class="profile-menu__meta">
+                <strong>Admin Haji Yuk</strong>
+                <small>Administrator</small>
+              </span>
+              <span aria-hidden="true">▾</span>
+            </button>
+            <div class="profile-menu__panel" id="profileMenu" hidden>
+              <p class="profile-menu__name">Admin Haji Yuk</p>
+              <p class="profile-menu__role">Administrator Prototype</p>
+              <button type="button" data-view-link="settings">Pengaturan</button>
+              <a href="index.html">Buka aplikasi pengguna</a>
+              <button type="button" class="is-danger" id="profileLogout">Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="admin-main" id="adminMain">
+        <!-- ======================= OVERVIEW ======================= -->
+        <section class="admin-view is-active" id="view-overview" data-view-panel="overview">
+          <div class="stat-grid" id="statGrid"></div>
+
+          <div class="chart-grid">
+            <article class="card chart-card">
+              <div class="card__head">
+                <div>
+                  <h2>Permintaan Haji &amp; Umroh</h2>
+                  <p class="muted">Jumlah permintaan menurut jenis layanan.</p>
+                </div>
+              </div>
+              <div class="chart-box">
+                <canvas id="serviceChart" height="240" role="img" aria-label="Grafik jumlah permintaan Haji dan Umroh"></canvas>
+              </div>
+              <div class="chart-legend" id="serviceChartLegend"></div>
+            </article>
+
+            <article class="card chart-card">
+              <div class="card__head">
+                <div>
+                  <h2>Status Permintaan</h2>
+                  <p class="muted">Sebaran permintaan berdasarkan status tindak lanjut.</p>
+                </div>
+              </div>
+              <div class="chart-box">
+                <canvas id="statusChart" height="240" role="img" aria-label="Grafik sebaran status permintaan"></canvas>
+              </div>
+              <div class="chart-legend" id="statusChartLegend"></div>
+            </article>
+          </div>
+
+          <div class="two-col">
+            <article class="card">
+              <div class="card__head">
+                <div>
+                  <h2>Pendaftaran terbaru</h2>
+                  <p class="muted">Lima permintaan terakhir dari pengguna.</p>
+                </div>
+                <button type="button" class="link-button" data-view-link="requests">Kelola →</button>
+              </div>
+              <div id="latestRequests" class="list-stack"></div>
+            </article>
+
+            <article class="card">
+              <div class="card__head">
+                <div>
+                  <h2>Aktivitas admin terbaru</h2>
+                  <p class="muted">Riwayat tindakan pada prototype ini.</p>
+                </div>
+              </div>
+              <div id="activityList" class="activity-list"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ======================= REQUESTS ======================= -->
+        <section class="admin-view" id="view-requests" data-view-panel="requests" hidden>
+          <article class="card">
+            <div class="card__head card__head--wrap">
+              <div>
+                <h2>Data Pendaftaran</h2>
+                <p class="muted">Semua permintaan pendaftaran awal dari aplikasi pengguna.</p>
+              </div>
+              <span class="badge badge--info" id="requestsCount">0 permintaan</span>
+            </div>
+
+            <div class="filter-bar">
+              <div class="search-field">
+                <span aria-hidden="true">🔍</span>
+                <label class="sr-only" for="requestSearch">Cari nama atau nomor permintaan</label>
+                <input type="search" id="requestSearch" placeholder="Cari nama atau nomor permintaan…" />
+              </div>
+              <label class="sr-only" for="filterService">Filter jenis layanan</label>
+              <select id="filterService">
+                <option value="Semua">Semua layanan</option>
+                <option value="Haji">Haji</option>
+                <option value="Umroh">Umroh</option>
+              </select>
+              <label class="sr-only" for="filterStatus">Filter status</label>
+              <select id="filterStatus">
+                <option value="Semua">Semua status</option>
+              </select>
+              <label class="sr-only" for="sortRequests">Urutkan</label>
+              <select id="sortRequests">
+                <option value="newest">Tanggal terbaru</option>
+                <option value="oldest">Tanggal terlama</option>
+                <option value="name">Nama A–Z</option>
+              </select>
+            </div>
+
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th scope="col">No. Permintaan</th>
+                    <th scope="col">Nama calon jamaah</th>
+                    <th scope="col">No. HP</th>
+                    <th scope="col">Layanan</th>
+                    <th scope="col">Paket</th>
+                    <th scope="col">Tanggal</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="requestsBody"></tbody>
+              </table>
+            </div>
+            <div id="requestsEmpty" class="empty-state" hidden></div>
+          </article>
+        </section>
+
+        <!-- ======================= PACKAGES ======================= -->
+        <section class="admin-view" id="view-packages" data-view-panel="packages" hidden>
+          <article class="card">
+            <div class="card__head card__head--wrap">
+              <div>
+                <h2>Kelola Paket Haji &amp; Umroh</h2>
+                <p class="muted">Perubahan langsung tampil pada katalog aplikasi pengguna.</p>
+              </div>
+              <button type="button" class="btn btn--primary" id="addPackageBtn">+ Tambah Paket</button>
+            </div>
+
+            <div class="filter-bar">
+              <div class="search-field">
+                <span aria-hidden="true">🔍</span>
+                <label class="sr-only" for="packageSearch">Cari paket</label>
+                <input type="search" id="packageSearch" placeholder="Cari nama paket…" />
+              </div>
+              <label class="sr-only" for="packageFilter">Filter kategori</label>
+              <select id="packageFilter">
+                <option value="Semua">Semua kategori</option>
+                <option value="Haji">Haji</option>
+                <option value="Umroh">Umroh</option>
+              </select>
+              <label class="sr-only" for="packagePublishFilter">Filter publikasi</label>
+              <select id="packagePublishFilter">
+                <option value="Semua">Semua status</option>
+                <option value="published">Dipublikasikan</option>
+                <option value="draft">Belum dipublikasikan</option>
+              </select>
+            </div>
+
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Paket</th>
+                    <th scope="col">Jenis</th>
+                    <th scope="col">Harga</th>
+                    <th scope="col">Durasi</th>
+                    <th scope="col">Jadwal</th>
+                    <th scope="col">Publikasi</th>
+                    <th scope="col">Diperbarui</th>
+                    <th scope="col" class="text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="packagesBody"></tbody>
+              </table>
+            </div>
+            <div id="packagesEmpty" class="empty-state" hidden></div>
+          </article>
+        </section>
+
+        <!-- ======================= GUIDES ======================= -->
+        <section class="admin-view" id="view-guides" data-view-panel="guides" hidden>
+          <article class="card">
+            <div class="card__head card__head--wrap">
+              <div>
+                <h2>Kelola Konten &amp; Panduan</h2>
+                <p class="muted">Materi tampil pada halaman Panduan Ibadah pengguna.</p>
+              </div>
+              <button type="button" class="btn btn--primary" id="addGuideBtn">+ Tambah Konten</button>
+            </div>
+
+            <div class="filter-bar">
+              <div class="search-field">
+                <span aria-hidden="true">🔍</span>
+                <label class="sr-only" for="guideAdminSearch">Cari konten</label>
+                <input type="search" id="guideAdminSearch" placeholder="Cari judul konten…" />
+              </div>
+              <label class="sr-only" for="guideAdminCategory">Filter kategori</label>
+              <select id="guideAdminCategory">
+                <option value="Semua">Semua kategori</option>
+              </select>
+            </div>
+
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Judul materi</th>
+                    <th scope="col">Kategori</th>
+                    <th scope="col">Ringkasan</th>
+                    <th scope="col">Publikasi</th>
+                    <th scope="col">Diperbarui</th>
+                    <th scope="col" class="text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="guidesBody"></tbody>
+              </table>
+            </div>
+            <div id="guidesEmpty" class="empty-state" hidden></div>
+          </article>
+        </section>
+
+        <!-- ======================= ANNOUNCEMENTS ======================= -->
+        <section class="admin-view" id="view-announcements" data-view-panel="announcements" hidden>
+          <article class="card">
+            <div class="card__head card__head--wrap">
+              <div>
+                <h2>Pengumuman</h2>
+                <p class="muted">Pengumuman aktif tampil pada bagian Informasi Penting di Beranda.</p>
+              </div>
+              <button type="button" class="btn btn--primary" id="addAnnouncementBtn">+ Tambah Pengumuman</button>
+            </div>
+            <div id="announcementsList" class="announcement-admin-list"></div>
+            <div id="announcementsEmpty" class="empty-state" hidden></div>
+          </article>
+        </section>
+
+        <!-- ======================= REPORTS ======================= -->
+        <section class="admin-view" id="view-reports" data-view-panel="reports" hidden>
+          <article class="card">
+            <div class="card__head card__head--wrap">
+              <div>
+                <h2>Laporan Pendaftaran</h2>
+                <p class="muted">Ringkasan dan riwayat permintaan sesuai filter.</p>
+              </div>
+              <button type="button" class="btn btn--primary" id="exportCsv">⬇ Export CSV</button>
+            </div>
+
+            <div class="filter-bar filter-bar--reports">
+              <div class="field">
+                <label for="reportDateFrom">Tanggal awal</label>
+                <input type="date" id="reportDateFrom" />
+              </div>
+              <div class="field">
+                <label for="reportDateTo">Tanggal akhir</label>
+                <input type="date" id="reportDateTo" />
+              </div>
+              <div class="field">
+                <label for="reportService">Jenis layanan</label>
+                <select id="reportService">
+                  <option value="Semua">Semua</option>
+                  <option value="Haji">Haji</option>
+                  <option value="Umroh">Umroh</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="reportStatus">Status</label>
+                <select id="reportStatus">
+                  <option value="Semua">Semua</option>
+                </select>
+              </div>
+              <div class="filter-bar__actions">
+                <button type="button" class="btn btn--primary" id="reportApply">Terapkan</button>
+                <button type="button" class="btn btn--ghost" id="reportReset">Reset</button>
+              </div>
+            </div>
+
+            <div class="stat-grid stat-grid--compact" id="reportSummary"></div>
+
+            <div class="two-col two-col--reports">
+              <div>
+                <h3 class="subhead">Jumlah berdasarkan status</h3>
+                <div class="table-wrap">
+                  <table class="admin-table admin-table--compact">
+                    <thead>
+                      <tr><th scope="col">Status</th><th scope="col" class="text-right">Jumlah</th></tr>
+                    </thead>
+                    <tbody id="reportStatusBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div>
+                <h3 class="subhead">Riwayat permintaan</h3>
+                <div id="reportList" class="list-stack list-stack--scroll"></div>
+                <div id="reportEmpty" class="empty-state" hidden>
+                  <h3>Tidak ada data</h3>
+                  <p>Tidak ada permintaan pada rentang tanggal atau filter yang dipilih.</p>
+                </div>
+              </div>
+            </div>
+            <p class="notice notice--soft">
+              Prototype ini hanya berisi data simulasi. Jangan memasukkan NIK, nomor paspor, atau
+              dokumen identitas asli.
+            </p>
+          </article>
+        </section>
+
+        <!-- ======================= SETTINGS ======================= -->
+        <section class="admin-view" id="view-settings" data-view-panel="settings" hidden>
+          <div class="settings-grid">
+            <article class="card">
+              <h2>Identitas aplikasi</h2>
+              <dl class="info-list">
+                <div><dt>Nama aplikasi</dt><dd>Haji Yuk</dd></div>
+                <div><dt>Tagline</dt><dd>Sahabat Perjalanan Ibadah Anda</dd></div>
+                <div><dt>Versi prototype</dt><dd>1.0.0-prototype</dd></div>
+                <div><dt>Jenis aplikasi</dt><dd>Website statis (HTML, CSS, JavaScript)</dd></div>
+              </dl>
+            </article>
+
+            <article class="card">
+              <h2>Identitas admin</h2>
+              <dl class="info-list">
+                <div><dt>Nama</dt><dd>Admin Haji Yuk</dd></div>
+                <div><dt>Peran</dt><dd>Administrator Prototype</dd></div>
+                <div><dt>Username</dt><dd>admin</dd></div>
+                <div><dt>Password</dt><dd>Disembunyikan (kredensial demo tidak ditampilkan di sini)</dd></div>
+              </dl>
+              <p class="notice notice--warn">
+                Autentikasi ini hanya simulasi frontend. Jangan gunakan untuk data nyata.
+              </p>
+            </article>
+
+            <article class="card">
+              <h2>Penyimpanan data</h2>
+              <p class="muted">
+                Data disimpan di <strong>localStorage</strong> browser perangkat ini, meliputi paket,
+                permintaan pendaftaran, panduan, pengumuman, dan log aktivitas. Sesi login admin
+                disimpan di <strong>sessionStorage</strong>.
+              </p>
+              <p class="muted">
+                Data tidak tersinkronisasi ke perangkat lain. Membersihkan data browser akan
+                menghapus seluruh data prototype.
+              </p>
+              <button type="button" class="btn btn--danger" id="resetDataAdmin">Hapus Seluruh Data Simulasi</button>
+            </article>
+
+            <article class="card">
+              <h2>Sesi &amp; akses</h2>
+              <p class="muted">
+                Anda sedang masuk sebagai Admin Haji Yuk. Logout akan mengakhiri sesi dan
+                mengembalikan Anda ke halaman login admin.
+              </p>
+              <div class="settings-actions">
+                <a class="btn btn--outline" href="index.html">Buka aplikasi pengguna</a>
+                <button type="button" class="btn btn--danger" id="settingsLogout">Logout</button>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- =================== MODAL DETAIL PERMINTAAN =================== -->
+  <div class="modal" id="requestModal" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog modal__dialog--lg" role="document">
+      <div class="modal__head">
+        <div>
+          <h2 id="requestModalTitle">Detail Pendaftaran</h2>
+          <p class="muted" id="requestModalCode">—</p>
+        </div>
+        <button type="button" class="icon-button" data-close-modal aria-label="Tutup detail">✕</button>
+      </div>
+      <div class="modal__body">
+        <div id="requestDetailBody"></div>
+
+        <form id="statusForm" class="status-form" novalidate>
+          <h3>Perbarui status &amp; catatan</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label for="detailStatus">Status permintaan</label>
+              <select id="detailStatus"></select>
+            </div>
+            <div class="field">
+              <label for="detailFollowUp">Catatan untuk calon jamaah (tampil di aplikasi pengguna)</label>
+              <textarea id="detailFollowUp" rows="3" placeholder="Contoh: Mohon lengkapi nomor HP aktif."></textarea>
+            </div>
+            <div class="field field--full">
+              <label for="detailInternal">Catatan internal admin (tidak ditampilkan ke pengguna)</label>
+              <textarea id="detailInternal" rows="2" placeholder="Catatan untuk petugas."></textarea>
+            </div>
+          </div>
+          <p class="field-hint">
+            Status ini hanya menunjukkan tindak lanjut permintaan melalui aplikasi, bukan
+            persetujuan pemerintah, nomor porsi, atau jaminan keberangkatan.
+          </p>
+        </form>
+      </div>
+      <div class="modal__foot modal__foot--split">
+        <button type="button" class="btn btn--danger btn--ghost-danger" id="deleteRequestBtn">Hapus Data</button>
+        <div class="modal__foot-actions">
+          <button type="button" class="btn btn--ghost" data-close-modal>Tutup</button>
+          <button type="button" class="btn btn--primary" id="saveStatusBtn">Simpan Status</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== MODAL PAKET =================== -->
+  <div class="modal" id="packageFormModal" role="dialog" aria-modal="true" aria-labelledby="packageFormTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog modal__dialog--lg" role="document">
+      <div class="modal__head">
+        <h2 id="packageFormTitle">Tambah Paket</h2>
+        <button type="button" class="icon-button" data-close-modal aria-label="Tutup formulir">✕</button>
+      </div>
+      <form id="packageForm" novalidate>
+        <div class="modal__body">
+          <input type="hidden" id="packageId" />
+          <div class="form-grid">
+            <div class="field field--full">
+              <label for="packageName">Nama paket atau layanan <span class="required">*</span></label>
+              <input type="text" id="packageName" placeholder="Contoh: Paket Umroh Ramadhan" />
+              <p class="field-error" data-error-for="packageName" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="packageServiceType">Jenis layanan <span class="required">*</span></label>
+              <select id="packageServiceType">
+                <option value="">Pilih jenis layanan</option>
+                <option value="Haji">Haji</option>
+                <option value="Umroh">Umroh</option>
+              </select>
+              <p class="field-error" data-error-for="packageServiceType" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="packagePrice">Harga atau keterangan biaya <span class="required">*</span></label>
+              <input type="text" id="packagePrice" placeholder="Contoh: Mulai Rp 28.900.000" />
+              <p class="field-error" data-error-for="packagePrice" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="packageDuration">Durasi perjalanan <span class="required">*</span></label>
+              <input type="text" id="packageDuration" placeholder="Contoh: 9 hari" />
+              <p class="field-error" data-error-for="packageDuration" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="packageSchedule">Jadwal keberangkatan <span class="required">*</span></label>
+              <input type="text" id="packageSchedule" placeholder="Contoh: Keberangkatan bulanan" />
+              <p class="field-error" data-error-for="packageSchedule" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="packageOrganizer">Nama penyelenggara <span class="required">*</span></label>
+              <input type="text" id="packageOrganizer" placeholder="Contoh: Haji Yuk Travel Partner" />
+              <p class="field-error" data-error-for="packageOrganizer" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="packageUpdatedAt">Tanggal pembaruan informasi</label>
+              <input type="date" id="packageUpdatedAt" />
+            </div>
+            <div class="field field--full">
+              <label for="packageDescription">Deskripsi paket <span class="required">*</span></label>
+              <textarea id="packageDescription" rows="3" placeholder="Jelaskan gambaran paket secara singkat."></textarea>
+              <p class="field-error" data-error-for="packageDescription" role="alert"></p>
+            </div>
+            <div class="field field--full">
+              <label for="packageFacilities">Daftar fasilitas <span class="required">*</span></label>
+              <textarea id="packageFacilities" rows="4" placeholder="Satu fasilitas per baris. Contoh: Tiket pesawat pulang-pergi"></textarea>
+              <p class="field-hint">Tulis satu fasilitas per baris.</p>
+              <p class="field-error" data-error-for="packageFacilities" role="alert"></p>
+            </div>
+            <div class="field field--full">
+              <label for="packageImage">URL gambar paket</label>
+              <input type="url" id="packageImage" placeholder="https://contoh.com/gambar.jpg atau assets/img/umroh.svg" />
+              <p class="field-hint">Kosongkan untuk memakai gambar pengganti.</p>
+              <div class="image-preview" id="packageImagePreview"></div>
+            </div>
+            <div class="field field--full">
+              <label class="switch-field">
+                <input type="checkbox" id="packagePublished" checked />
+                <span class="switch-field__box" aria-hidden="true"></span>
+                <span>Publikasikan paket ke katalog pengguna</span>
+              </label>
+            </div>
+          </div>
+          <p class="notice notice--warn">
+            Harga, jadwal, dan fasilitas prototype ini adalah simulasi dan perlu diverifikasi
+            sebelum dipublikasikan sebagai penawaran nyata.
+          </p>
+        </div>
+        <div class="modal__foot">
+          <button type="button" class="btn btn--ghost" data-close-modal>Batal</button>
+          <button type="submit" class="btn btn--primary" id="savePackageBtn">Simpan Paket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =================== MODAL KONTEN =================== -->
+  <div class="modal" id="guideFormModal" role="dialog" aria-modal="true" aria-labelledby="guideFormTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog modal__dialog--lg" role="document">
+      <div class="modal__head">
+        <h2 id="guideFormTitle">Tambah Konten</h2>
+        <button type="button" class="icon-button" data-close-modal aria-label="Tutup formulir">✕</button>
+      </div>
+      <form id="guideForm" novalidate>
+        <div class="modal__body">
+          <input type="hidden" id="guideId" />
+          <div class="form-grid">
+            <div class="field field--full">
+              <label for="guideTitle">Judul materi <span class="required">*</span></label>
+              <input type="text" id="guideTitle" placeholder="Contoh: Panduan Dasar Ibadah Umroh" />
+              <p class="field-error" data-error-for="guideTitle" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="guideCategory">Kategori <span class="required">*</span></label>
+              <select id="guideCategory"></select>
+              <p class="field-error" data-error-for="guideCategory" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="guideUpdatedAt">Tanggal pembaruan</label>
+              <input type="date" id="guideUpdatedAt" />
+            </div>
+            <div class="field field--full">
+              <label for="guideSummary">Deskripsi singkat <span class="required">*</span></label>
+              <textarea id="guideSummary" rows="2" placeholder="Ringkasan satu sampai dua kalimat."></textarea>
+              <p class="field-error" data-error-for="guideSummary" role="alert"></p>
+            </div>
+            <div class="field field--full">
+              <label for="guideContent">Isi materi <span class="required">*</span></label>
+              <textarea id="guideContent" rows="8" placeholder="Tulis isi panduan. Gunakan baris baru untuk memisahkan poin."></textarea>
+              <p class="field-error" data-error-for="guideContent" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="guideImage">URL gambar (opsional)</label>
+              <input type="url" id="guideImage" placeholder="https://contoh.com/gambar.jpg" />
+            </div>
+            <div class="field">
+              <label for="guideSource">Sumber atau referensi</label>
+              <input type="text" id="guideSource" placeholder="Contoh: Kemenag / pembimbing manasik" />
+            </div>
+            <div class="field field--full">
+              <label class="switch-field">
+                <input type="checkbox" id="guidePublished" checked />
+                <span class="switch-field__box" aria-hidden="true"></span>
+                <span>Publikasikan ke halaman Panduan Ibadah</span>
+              </label>
+            </div>
+          </div>
+          <p class="notice notice--warn">
+            Materi doa, tata cara Haji, dan Umroh wajib ditinjau pihak yang kompeten sebelum
+            dipublikasikan.
+          </p>
+        </div>
+        <div class="modal__foot">
+          <button type="button" class="btn btn--ghost" data-close-modal>Batal</button>
+          <button type="submit" class="btn btn--primary" id="saveGuideBtn">Simpan Konten</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =================== PRATINJAU KONTEN =================== -->
+  <div class="modal" id="guidePreviewModal" role="dialog" aria-modal="true" aria-labelledby="guidePreviewTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog" role="document">
+      <div class="modal__head">
+        <h2 id="guidePreviewTitle">Pratinjau Konten</h2>
+        <button type="button" class="icon-button" data-close-modal aria-label="Tutup pratinjau">✕</button>
+      </div>
+      <div class="modal__body" id="guidePreviewBody"></div>
+    </div>
+  </div>
+
+  <!-- =================== PRATINJAU PAKET =================== -->
+  <div class="modal" id="packagePreviewModal" role="dialog" aria-modal="true" aria-labelledby="packagePreviewTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog" role="document">
+      <div class="modal__head">
+        <h2 id="packagePreviewTitle">Pratinjau Paket</h2>
+        <button type="button" class="icon-button" data-close-modal aria-label="Tutup pratinjau">✕</button>
+      </div>
+      <div class="modal__body" id="packagePreviewBody"></div>
+      <div class="modal__foot">
+        <button type="button" class="btn btn--ghost" data-close-modal>Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== MODAL PENGUMUMAN =================== -->
+  <div class="modal" id="announcementFormModal" role="dialog" aria-modal="true" aria-labelledby="announcementFormTitle" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog" role="document">
+      <div class="modal__head">
+        <h2 id="announcementFormTitle">Tambah Pengumuman</h2>
+        <button type="button" class="icon-button" data-close-modal aria-label="Tutup formulir">✕</button>
+      </div>
+      <form id="announcementForm" novalidate>
+        <div class="modal__body">
+          <input type="hidden" id="announcementId" />
+          <div class="form-grid">
+            <div class="field field--full">
+              <label for="announcementTitle">Judul pengumuman <span class="required">*</span></label>
+              <input type="text" id="announcementTitle" placeholder="Contoh: Jadwal manasik bulan ini" />
+              <p class="field-error" data-error-for="announcementTitle" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="announcementCategory">Kategori <span class="required">*</span></label>
+              <select id="announcementCategory"></select>
+              <p class="field-error" data-error-for="announcementCategory" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="announcementDate">Tanggal pengumuman</label>
+              <input type="date" id="announcementDate" />
+            </div>
+            <div class="field field--full">
+              <label for="announcementBody">Isi pengumuman <span class="required">*</span></label>
+              <textarea id="announcementBody" rows="5" placeholder="Tulis isi pengumuman dengan jelas dan singkat."></textarea>
+              <p class="field-error" data-error-for="announcementBody" role="alert"></p>
+            </div>
+            <div class="field field--full">
+              <label class="switch-field">
+                <input type="checkbox" id="announcementActive" checked />
+                <span class="switch-field__box" aria-hidden="true"></span>
+                <span>Tampilkan pengumuman di halaman Beranda</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal__foot">
+          <button type="button" class="btn btn--ghost" data-close-modal>Batal</button>
+          <button type="submit" class="btn btn--primary" id="saveAnnouncementBtn">Simpan Pengumuman</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="noscript">Dashboard admin memerlukan JavaScript. Aktifkan JavaScript di browser Anda.</div>
+  </noscript>
+
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>
